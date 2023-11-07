@@ -1,4 +1,4 @@
-from app.database import Base
+from core.models.base import Base
 from sqlalchemy import JSON, String, TIMESTAMP, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
@@ -14,4 +14,3 @@ class User(Base):
     registration_date: Mapped[datetime] = mapped_column(TIMESTAMP)
     training_batch_size: Mapped[int] = mapped_column(Integer, default=20)
     birth_date: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)
-
