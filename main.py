@@ -1,16 +1,24 @@
-# This is a sample Python script.
+from contextlib import asynccontextmanager
+from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy import create_engine
+from fastapi import FastAPI
+import uvicorn
+from core.config import settings
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from core.models import Base, db_helper
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # If there is no tables, then create it
+    async with db_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    yield
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+app = FastAPI(lifespan=lifespan)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", reload=True)
