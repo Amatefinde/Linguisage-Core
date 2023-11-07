@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "linguisage-authentification"
+version = "0.1.0"
+description = ""
+authors = ["iRespectOnlyYen <MyNameIIIypuk@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+alembic = "^1.12.1"
+fastapi = {extras = ["all"], version = "^0.104.1"}
+asyncpg = "^0.29.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
