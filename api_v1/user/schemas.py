@@ -8,15 +8,17 @@ class UserBaseSchema(BaseModel):
 
     email: EmailStr
     name: str
-    password: str
-    birth_date: Optional[str]
+
+    birth_date: datetime | None = None
 
 
 class UserCreateSchema(UserBaseSchema):
+    password: str
     pass
 
 
 class UserSchema(BaseModel):
     id: int
+    hash_password: str
     registration_date: datetime
     birth_date: Optional[datetime]

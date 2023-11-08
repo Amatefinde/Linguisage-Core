@@ -17,10 +17,13 @@ async def get_user(session: AsyncSession, user_id: int) -> User | None:
 
 
 async def add_user(session: AsyncSession, user: UserCreateSchema):
+    # todo check if user with this email is already exist
+
     user = user.model_dump()
-    user["hash_password"] = user["password"]
+    user["hash_password"] = user["password"]   # todo password hashing
     del user["password"]
-    session.add(User(**user))
+    db_user = User(**user)
+    session.add(db_user)
     await session.commit()
-    await session.refresh(user)
-    return user
+    await session.refresh(db_user)
+    return db_user
