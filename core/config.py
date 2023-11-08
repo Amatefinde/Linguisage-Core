@@ -17,5 +17,7 @@ class Settings(BaseSettings):
     )
     db_echo: bool = True
 
+    api_v1_prefix: str = "/api/v1"
+
 
 settings = Settings()

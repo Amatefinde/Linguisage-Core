@@ -17,7 +17,10 @@ async def get_user(session: AsyncSession, user_id: int) -> User | None:
 
 
 async def add_user(session: AsyncSession, user: UserCreateSchema):
-    session.add(User(**user.model_dump()))
+    user = user.model_dump()
+    user["hash_password"] = user["password"]
+    del user["password"]
+    session.add(User(**user))
     await session.commit()
     await session.refresh(user)
     return user

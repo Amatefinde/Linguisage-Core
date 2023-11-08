@@ -19,3 +19,4 @@ class UserCreateSchema(UserBaseSchema):
 class UserSchema(BaseModel):
     id: int
     registration_date: datetime
+    birth_date: Optional[datetime]

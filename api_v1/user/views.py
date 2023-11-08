@@ -1,28 +1,36 @@
-from fastapi import APIRouter, HTTPException
-
+from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
 from .schemas import UserSchema, UserCreateSchema
+from core.models import db_helper
 
-router = APIRouter(prefix="users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/", response_model=list(UserSchema))
-async def get_users(session):
-    return await crud.get_users()
+@router.get("/")
+async def get_users(
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await crud.get_users(session=session)
 
 
 @router.post("/", response_model=UserSchema)
-async def create_user(user: UserCreateSchema, session):
-    pass
+async def create_user(
+    user: UserCreateSchema,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await crud.add_user(session=session, user=user)
 
 
 @router.get("/{user_id}/", response_model=UserSchema)
-async def get_user(user_id: int, session):
-    user = await crud.get_user(session=session, user_id=user_id)
+async def get_user(
+    user_id: int, session: AsyncSession = Depends(db_helper.session_dependency)
+):
+    user = await crud.get_user(user_id=user_id, session=session)
     if user:
         return user
 
     raise HTTPException(
-        status_code=404,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail=f"User with id {user_id} is not found",
     )

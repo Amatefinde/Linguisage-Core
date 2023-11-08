@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
     async_scoped_session,
+    AsyncSession,
 )
 
 from asyncio import current_task
@@ -25,10 +26,10 @@ class DataBaseHelper:
         )
         return session
 
-    async def session_dependency(self) -> AssyncSession:
-        async with self.get_scoped_session() as session:
-            yield session
-            await session.remove()
+    async def session_dependency(self) -> AsyncSession:
+        session = self.get_scoped_session()
+        yield session
+        await session.remove()
 
 
 db_helper = DataBaseHelper(
