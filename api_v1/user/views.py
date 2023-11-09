@@ -84,8 +84,8 @@ async def delete_user(
 async def login_user(
     response: Response,
     user_data: LoginUserSchema,
+    user_data_from_db: User = Depends(user_by_email),
 ):
-    user_data_from_db: User = await user_by_email(user_email=user_data.email)
     is_valid_password = verify_password(
         user_data.password, user_data_from_db.hash_password
     )

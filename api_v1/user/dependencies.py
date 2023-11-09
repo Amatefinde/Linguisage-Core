@@ -5,6 +5,8 @@ from . import crud
 from core.models import db_helper, User
 from fastapi import Body, Path
 
+from .schemas import LoginUserSchema
+
 
 async def user_by_id(
     user_id: Annotated[int, Path],
@@ -21,9 +23,10 @@ async def user_by_id(
 
 
 async def user_by_email(
-    user_email: str,
+    user_data: LoginUserSchema,
     session: AsyncSession = Depends(db_helper.session_dependency),
 ) -> User:
+    user_email = user_data.email
     user = await crud.get_user_by_email(email=user_email, session=session)
     if user:
         return user
