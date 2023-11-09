@@ -1,11 +1,8 @@
 from contextlib import asynccontextmanager
-from sqlalchemy_utils import database_exists, create_database
-from sqlalchemy import create_engine
 from fastapi import FastAPI
 import uvicorn
 from core.config import settings
 from api_v1 import router
-from core.models import Base, db_helper
 
 
 @asynccontextmanager
