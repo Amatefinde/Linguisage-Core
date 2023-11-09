@@ -2,9 +2,10 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
 from .schemas import UserSchema, UserCreateSchema, UserResponseSchema, UserUpdateSchema
-from core.models import db_helper
+from core.models import db_helper, User
 from asyncpg.exceptions import UniqueViolationError
 from typing import List
+from .dependencies import user_by_id
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -22,7 +23,6 @@ async def create_user(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     db_user = await crud.get_user_by_email(session=session, email=user.email)
-    print(db_user)
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -33,50 +33,34 @@ async def create_user(
 
 
 @router.get("/{user_id}/", response_model=UserSchema)
-async def get_user(
-    user_id: int,
-    session: AsyncSession = Depends(db_helper.session_dependency),
-):
-    user = await crud.get_user_by_id(user_id=user_id, session=session)
-    if user:
-        return user
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"User with id {user_id} is not found",
-    )
+async def get_user(user: User = Depends(user_by_id)):
+    return user
 
 
 @router.patch("/{user_id}/", response_model=UserSchema)
 async def update_user(
-    user_id: int,
     new_user: UserUpdateSchema,
+    user: User = Depends(user_by_id),
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    user = await crud.get_user_by_id(user_id=user_id, session=session)
-    if user:
-        return await crud.update_user_partition(
-            session=session,
-            user_id=user_id,
-            new_user=new_user,
+    if (user.email != new_user.email) and (
+        await crud.get_user_by_email(session=session, email=new_user.email)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f'User with email "{new_user.email}" already exists',
         )
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"User with id {user_id} is not found",
+    return await crud.update_user_partition(
+        session=session,
+        user_id=user.id,
+        new_user=new_user,
     )
 
 
 @router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
-    user_id: int,
+    user: User = Depends(user_by_id),
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    user = await crud.get_user_by_id(user_id=user_id, session=session)
-    if user:
-        return await crud.delete_user(session=session, user=user)
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"User with id {user_id} is not found",
-    )
+    return await crud.delete_user(session=session, user=user)
