@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
-from .schemas import UserSchema, UserCreateSchema
+from .schemas import UserSchema, UserCreateSchema, UserResponseSchema
 from core.models import db_helper
 from asyncpg.exceptions import UniqueViolationError
 
@@ -15,13 +15,13 @@ async def get_users(
     return await crud.get_users(session=session)
 
 
-# @router.post("/", response_model=UserSchema)
-@router.post("/")
+@router.post("/", response_model=UserResponseSchema)
 async def create_user(
     user: UserCreateSchema,
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    db_user = crud.get_user_by_email(session=session, email=user.email)
+    db_user = await crud.get_user_by_email(session=session, email=user.email)
+    print(db_user)
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
