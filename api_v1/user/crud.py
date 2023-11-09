@@ -3,6 +3,7 @@ from sqlalchemy import select
 from core.models import User
 from sqlalchemy.engine import Result
 from .schemas import UserCreateSchema, UserSchema, UserUpdateSchema
+from ..auth_tools.auth import get_hashed_password
 
 
 async def get_users(session: AsyncSession) -> list[User]:
@@ -23,7 +24,7 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
 
 async def add_user(session: AsyncSession, user: UserCreateSchema):
     user = user.model_dump()
-    user["hash_password"] = user["password"]  # todo password hashing
+    user["hash_password"] = get_hashed_password(user["password"])
     del user["password"]
     db_user = User(**user)
     session.add(db_user)

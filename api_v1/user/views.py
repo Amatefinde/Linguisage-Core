@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
 from .schemas import UserSchema, UserCreateSchema, UserResponseSchema, UserUpdateSchema
 from core.models import db_helper, User
-from asyncpg.exceptions import UniqueViolationError
 from typing import List
 from .dependencies import user_by_id
 
@@ -17,7 +16,11 @@ async def get_users(
     return await crud.get_users(session=session)
 
 
-@router.post("/", response_model=UserResponseSchema)
+@router.post(
+    path="/",
+    response_model=UserResponseSchema,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_user(
     user: UserCreateSchema,
     session: AsyncSession = Depends(db_helper.session_dependency),
