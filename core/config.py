@@ -1,8 +1,14 @@
 from pydantic_settings import BaseSettings
+from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+
+class AuthSettings:
+    JWT_ACCESS_KEY: str = os.environ.get("JWT_ACCESS_KEY")
+    JWT_REFRESH_KEY: str = os.environ.get("JWT_REFRESH_KEY")
 
 
 class Settings(BaseSettings):
@@ -18,6 +24,8 @@ class Settings(BaseSettings):
     db_echo: bool = False
 
     api_v1_prefix: str = "/api/v1"
+
+    auth_settings: AuthSettings = AuthSettings()
 
 
 settings = Settings()
