@@ -6,7 +6,7 @@ authors = ["iRespectOnlyYen <MyNameIIIypuk@yandex.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 alembic = "^1.12.1"
 fastapi = {extras = ["all"], version = "^0.104.1"}
 asyncpg = "^0.29.0"
