@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from . import crud
 from core.models import db_helper, User
-from fastapi import Path
+from fastapi import Body, Path
 
 
 async def user_by_id(
@@ -21,7 +21,7 @@ async def user_by_id(
 
 
 async def user_by_email(
-    user_email: Annotated[str, Path],
+    user_email: Annotated[str, Body],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ) -> User:
     user = await crud.get_user_by_email(email=user_email, session=session)
