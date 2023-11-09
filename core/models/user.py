@@ -1,7 +1,7 @@
 from core.models.base import Base
-from sqlalchemy import JSON, String, TIMESTAMP, Integer
+from sqlalchemy import JSON, String, TIMESTAMP, Integer, DATE
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime
+from datetime import date, datetime
 
 
 class User(Base):
@@ -15,4 +15,4 @@ class User(Base):
         TIMESTAMP, default=datetime.utcnow()
     )
     training_batch_size: Mapped[int] = mapped_column(Integer, default=20)
-    birth_date: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)
+    birth_date: Mapped[date] = mapped_column(DATE, nullable=True)
