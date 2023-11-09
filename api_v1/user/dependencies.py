@@ -30,5 +30,5 @@ async def user_by_email(
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"User with email \"{user_email}\" is not found",
+        detail=f'User with email "{user_email}" is not found',
     )
