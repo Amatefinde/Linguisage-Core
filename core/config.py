@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     db_url: str = (
         f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
-    db_echo: bool = True
+    db_echo: bool = False
 
     api_v1_prefix: str = "/api/v1"
 
