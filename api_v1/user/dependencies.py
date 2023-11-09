@@ -21,7 +21,7 @@ async def user_by_id(
 
 
 async def user_by_email(
-    user_email: Annotated[str, Body],
+    user_email: str,
     session: AsyncSession = Depends(db_helper.session_dependency),
 ) -> User:
     user = await crud.get_user_by_email(email=user_email, session=session)

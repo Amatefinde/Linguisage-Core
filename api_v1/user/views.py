@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
 from .schemas import (
@@ -10,7 +10,12 @@ from .schemas import (
 )
 from core.models import db_helper, User
 from typing import List
-from .dependencies import user_by_id
+from .dependencies import user_by_id, user_by_email
+from api_v1.auth_tools.auth import (
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -75,5 +80,22 @@ async def delete_user(
     return await crud.delete_user(session=session, user=user)
 
 
-
-
+@router.post("/login/")
+async def login_user(
+    response: Response,
+    user_data: LoginUserSchema,
+):
+    user_data_from_db: User = await user_by_email(user_email=user_data.email)
+    is_valid_password = verify_password(
+        user_data.password, user_data_from_db.hash_password
+    )
+    if not is_valid_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password"
+        )
+    response.set_cookie(
+        key="linguisage_refresh_token",
+        value=create_refresh_token(user_data_from_db.id),
+        httponly=True,
+    )
+    return create_access_token(user_data_from_db.id)

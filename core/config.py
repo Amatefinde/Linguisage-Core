@@ -9,6 +9,8 @@ load_dotenv()
 class AuthSettings:
     JWT_ACCESS_KEY: str = os.environ.get("JWT_ACCESS_KEY")
     JWT_REFRESH_KEY: str = os.environ.get("JWT_REFRESH_KEY")
+    jwt_access_expires_time = 30  # 30 minutes
+    jwt_refresh_expires_time = 60 * 24 * 30  # 30 days
 
 
 class Settings(BaseSettings):

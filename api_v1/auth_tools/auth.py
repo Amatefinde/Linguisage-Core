@@ -3,11 +3,11 @@ import os
 from datetime import datetime, timedelta
 from typing import Union, Any
 from jose import jwt
+from core.config import settings
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
-REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 30 days
+
 ALGORITHM = "HS256"
 JWT_SECRET_KEY = "DEV"  # should be kept secret
 JWT_REFRESH_SECRET_KEY = "DEV_REFRESH"  # should be kept secret
@@ -26,7 +26,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> 
         expires_delta = datetime.utcnow() + expires_delta
     else:
         expires_delta = datetime.utcnow() + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+            minutes=settings.auth_settings.jwt_access_expires_time
         )
 
     to_encode = {"exp": expires_delta, "sub": str(subject)}
@@ -39,7 +39,7 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) ->
         expires_delta = datetime.utcnow() + expires_delta
     else:
         expires_delta = datetime.utcnow() + timedelta(
-            minutes=REFRESH_TOKEN_EXPIRE_MINUTES
+            minutes=settings.auth_settings.jwt_refresh_expires_time
         )
 
     to_encode = {"exp": expires_delta, "sub": str(subject)}
