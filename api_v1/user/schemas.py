@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
-from datetime import datetime
+from datetime import date, datetime
 
 
 class UserBaseSchema(BaseModel):
@@ -9,7 +9,7 @@ class UserBaseSchema(BaseModel):
     email: EmailStr
     name: str
 
-    birth_date: datetime | None = None
+    birth_date: date | None = None
 
 
 class UserCreateSchema(UserBaseSchema):
