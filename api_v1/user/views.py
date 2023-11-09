@@ -4,11 +4,12 @@ from . import crud
 from .schemas import UserSchema, UserCreateSchema, UserResponseSchema
 from core.models import db_helper
 from asyncpg.exceptions import UniqueViolationError
+from typing import List
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/")
+@router.get("/", response_model=List[UserSchema])
 async def get_users(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
@@ -33,11 +34,27 @@ async def create_user(
 
 @router.get("/{user_id}/", response_model=UserSchema)
 async def get_user(
-    user_id: int, session: AsyncSession = Depends(db_helper.session_dependency)
+    user_id: int,
+    session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     user = await crud.get_user_by_id(user_id=user_id, session=session)
     if user:
         return user
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User with id {user_id} is not found",
+    )
+
+
+@router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: int,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    user = await crud.get_user_by_id(user_id=user_id, session=session)
+    if user:
+        return await crud.delete_user(session=session, user=user)
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,

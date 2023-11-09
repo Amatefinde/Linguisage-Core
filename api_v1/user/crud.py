@@ -22,12 +22,16 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
 
 
 async def add_user(session: AsyncSession, user: UserCreateSchema):
-    # todo check if user with this email is already exist
     user = user.model_dump()
-    user["hash_password"] = user["password"]   # todo password hashing
+    user["hash_password"] = user["password"]  # todo password hashing
     del user["password"]
     db_user = User(**user)
     session.add(db_user)
     await session.commit()
     await session.refresh(db_user)
     return db_user
+
+
+async def delete_user(session: AsyncSession, user: User):
+    await session.delete(user)
+    await session.commit()
