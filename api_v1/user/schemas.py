@@ -17,7 +17,12 @@ class UserCreateSchema(UserBaseSchema):
     pass
 
 
-class UserSchema(BaseModel):
+class UserResponseSchema(UserBaseSchema):
+    id: int
+    registration_date: datetime
+
+
+class UserSchema(UserBaseSchema):
     id: int
     hash_password: str
     registration_date: datetime
