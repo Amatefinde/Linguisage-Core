@@ -32,3 +32,8 @@ class UserSchema(UserBaseSchema):
     id: int
     hash_password: str
     registration_date: datetime
+
+
+class LoginUserSchema(BaseModel):
+    email: EmailStr
+    password: str

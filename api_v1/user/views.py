@@ -1,7 +1,13 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
-from .schemas import UserSchema, UserCreateSchema, UserResponseSchema, UserUpdateSchema
+from .schemas import (
+    UserSchema,
+    UserCreateSchema,
+    UserResponseSchema,
+    UserUpdateSchema,
+    LoginUserSchema,
+)
 from core.models import db_helper, User
 from typing import List
 from .dependencies import user_by_id
@@ -67,3 +73,7 @@ async def delete_user(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     return await crud.delete_user(session=session, user=user)
+
+
+
+
