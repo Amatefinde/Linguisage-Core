@@ -12,13 +12,17 @@ async def get_users(session: AsyncSession) -> list[User]:
     return list(users)
 
 
-async def get_user(session: AsyncSession, user_id: int) -> User | None:
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
     return await session.get(User, user_id)
+
+
+async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
+    stmt = select(User).where(User.email == email)
+    return await session.scalar(stmt)
 
 
 async def add_user(session: AsyncSession, user: UserCreateSchema):
     # todo check if user with this email is already exist
-
     user = user.model_dump()
     user["hash_password"] = user["password"]   # todo password hashing
     del user["password"]
