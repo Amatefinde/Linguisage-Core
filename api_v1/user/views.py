@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
-from .schemas import UserSchema, UserCreateSchema, UserResponseSchema
+from .schemas import UserSchema, UserCreateSchema, UserResponseSchema, UserUpdateSchema
 from core.models import db_helper
 from asyncpg.exceptions import UniqueViolationError
 from typing import List
@@ -47,7 +47,27 @@ async def get_user(
     )
 
 
-@router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
+@router.patch("/{user_id}/", response_model=UserSchema)
+async def update_user(
+    user_id: int,
+    new_user: UserUpdateSchema,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    user = await crud.get_user_by_id(user_id=user_id, session=session)
+    if user:
+        return await crud.update_user_partition(
+            session=session,
+            user_id=user_id,
+            new_user=new_user,
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User with id {user_id} is not found",
+    )
+
+
+@router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
     session: AsyncSession = Depends(db_helper.session_dependency),

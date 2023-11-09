@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from core.models import User
 from sqlalchemy.engine import Result
-from .schemas import UserCreateSchema
+from .schemas import UserCreateSchema, UserSchema, UserUpdateSchema
 
 
 async def get_users(session: AsyncSession) -> list[User]:
@@ -30,6 +30,22 @@ async def add_user(session: AsyncSession, user: UserCreateSchema):
     await session.commit()
     await session.refresh(db_user)
     return db_user
+
+
+async def update_user_partition(
+    session: AsyncSession,
+    user_id: int,
+    new_user: UserUpdateSchema,
+):
+    user = await get_user_by_id(user_id=user_id, session=session)
+    for name, value in new_user.model_dump(exclude_unset=True).items():
+        if name == "password":
+            name = "hash_password"
+        setattr(user, name, value)
+
+    await session.commit()
+    await session.refresh(user)
+    return user
 
 
 async def delete_user(session: AsyncSession, user: User):
