@@ -42,6 +42,8 @@ def create_token(
 
     to_encode = {"exp": expires_delta, "sub": str(subject)}
     if token_type == "Refresh":
+        encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_KEY, ALGORITHM)
+    elif token_type == "Access":
         encoded_jwt = jwt.encode(to_encode, JWT_ACCESS_KEY, ALGORITHM)
     elif token_type == "Access":
         encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_KEY, ALGORITHM)
