@@ -12,11 +12,7 @@ from core.database import db_helper
 from core.database.models import User
 from typing import List
 from .dependencies import user_by_id, user_by_email
-from api_v1.auth_tools.auth import (
-    verify_password,
-    create_access_token,
-    create_refresh_token,
-)
+from api_v1.auth_tools.auth import verify_password, create_token
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -96,10 +92,10 @@ async def login_user(
         )
     response.set_cookie(
         key="linguisage_refresh_token",
-        value=create_refresh_token(user_data_from_db.id),
+        value=create_token(user_data_from_db.id, "Refresh"),
         httponly=True,
     )
-    return create_access_token(user_data_from_db.id)
+    return create_token(user_data_from_db.id, "Access")
 
 
 @router.get("/get_browser_info")
