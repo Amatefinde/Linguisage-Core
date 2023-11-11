@@ -31,6 +31,7 @@ class User(Base):
 class Session(Base):
     token: Mapped[str]
     ip: Mapped[str]
+    browser_header: Mapped[str]
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
