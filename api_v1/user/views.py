@@ -1,17 +1,20 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Response, Request
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, status, Depends, Response, Request, Header
+from fastapi.security import OAuth2PasswordRequestForm
+
 from . import crud
+from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import (
     UserSchema,
     UserCreateSchema,
     UserResponseSchema,
     UserUpdateSchema,
     LoginUserSchema,
+    SessionSchema,
 )
 from core.database import db_helper
 from core.database.models import User
-from typing import List
-from .dependencies import user_by_id, user_by_email
+from typing import List, Annotated
+from .dependencies import user_by_id, user_by_email, get_current_user
 from api_v1.auth_tools.auth import verify_password, create_token
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -79,10 +82,15 @@ async def delete_user(
 
 @router.post("/login/")
 async def login_user(
+    request: Request,
     response: Response,
-    user_data: LoginUserSchema,
-    user_data_from_db: User = Depends(user_by_email),
+    user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_agent: Annotated[str | None, Header()] = None,
+    session: AsyncSession = Depends(db_helper.session_dependency),
 ):
+    user_data_from_db = await crud.get_user_by_email(
+        email=user_data.username, session=session
+    )
     is_valid_password = verify_password(
         user_data.password, user_data_from_db.hash_password
     )
@@ -90,14 +98,50 @@ async def login_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password"
         )
+
+    refresh_token = create_token(user_data_from_db.id, "Refresh")
+    access_token = create_token(user_data_from_db.id, "Access")
+
+    user_session = SessionSchema(
+        user_id=user_data_from_db.id,
+        ip=request.client.host,
+        browser_header=user_agent,
+        token=refresh_token,
+    )
+
+    await crud.add_user_session(session=session, user_session=user_session)
+
     response.set_cookie(
         key="linguisage_refresh_token",
-        value=create_token(user_data_from_db.id, "Refresh"),
+        value=refresh_token,
         httponly=True,
     )
-    return create_token(user_data_from_db.id, "Access")
+    return {"access_token": access_token, "token_type": "Bearer"}
 
 
-@router.get("/get_browser_info")
-def get_browser_info(request: Request, field: int = 2):
-    return request.client.host
+@router.get("/me", response_model=UserResponseSchema | None)
+async def read_users_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return current_user
+
+
+# @router.get("/log_out/", status_code=status.HTTP_204_NO_CONTENT)
+# async def login_user(
+#     request: Request,
+#     response: Response,
+#     user_agent: Annotated[str | None, Header()] = None,
+#     session: AsyncSession = Depends(db_helper.session_dependency),
+# ):
+#     refresh_token = request.cookies.get("linguisage_refresh_token")
+#
+#     user_session = SessionSchema(
+#         user_id=user_data_from_db.id,
+#         ip=request.client.host,
+#         browser_header=user_agent,
+#         token=refresh_token,
+#     )
+#
+#     response.delete_cookie("linguisage_refresh_token")
+#
+#     await crud.delete_user_session(session=session, user_session=user_session)
