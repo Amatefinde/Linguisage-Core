@@ -8,8 +8,8 @@ from .schemas import (
     UserUpdateSchema,
     LoginUserSchema,
 )
-from core.batabase import db_helper
-from core.batabase.models import User
+from core.database import db_helper
+from core.database.models import User
 from typing import List
 from .dependencies import user_by_id, user_by_email
 from api_v1.auth_tools.auth import (

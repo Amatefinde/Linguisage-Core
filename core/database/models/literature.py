@@ -1,7 +1,7 @@
-from core.batabase.base import Base
+from core.database.base import Base
 
 from sqlalchemy import TIMESTAMP, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -16,4 +16,5 @@ class Literature(Base):
     add_datetime: Mapped[datetime] = mapped_column(TIMESTAMP)
     last_open_datetime: Mapped[datetime | None] = mapped_column(TIMESTAMP)
 
-    user: Mapped["User"] = mapped_column(ForeignKey("user_account.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user: Mapped["User"] = relationship(back_populates="literatures")

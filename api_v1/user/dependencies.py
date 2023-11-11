@@ -2,8 +2,8 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from . import crud
-from core.batabase import db_helper
-from core.batabase.models import User
+from core.database import db_helper
+from core.database.models import User
 from fastapi import Body, Path
 
 from .schemas import LoginUserSchema

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from core.batabase.models import User
+from core.database.models import User
 from sqlalchemy.engine import Result
 from .schemas import UserCreateSchema, UserUpdateSchema
 from ..auth_tools.auth import get_hashed_password
