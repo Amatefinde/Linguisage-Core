@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Response
+from fastapi import APIRouter, HTTPException, status, Depends, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud
 from .schemas import (
@@ -8,7 +8,8 @@ from .schemas import (
     UserUpdateSchema,
     LoginUserSchema,
 )
-from core.models import db_helper, User
+from core.batabase import db_helper
+from core.batabase.models import User
 from typing import List
 from .dependencies import user_by_id, user_by_email
 from api_v1.auth_tools.auth import (
@@ -99,3 +100,8 @@ async def login_user(
         httponly=True,
     )
     return create_access_token(user_data_from_db.id)
+
+
+@router.get("/get_browser_info")
+def get_browser_info(request: Request, field: int = 2):
+    return request.client.host

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from core.models import User
+from core.batabase.models import User
 from sqlalchemy.engine import Result
 from .schemas import UserCreateSchema, UserUpdateSchema
 from ..auth_tools.auth import get_hashed_password
@@ -13,12 +13,16 @@ async def get_users(session: AsyncSession) -> list[User]:
     return list(users)
 
 
-async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
+async def get_user_by_id(
+    session: AsyncSession,
+    user_id: int,
+) -> User | None:
     return await session.get(User, user_id)
 
 
 async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     stmt = select(User).where(User.email == email)
+
     return await session.scalar(stmt)
 
 
