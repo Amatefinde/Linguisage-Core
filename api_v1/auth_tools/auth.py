@@ -1,10 +1,12 @@
+from fastapi import HTTPException
 from passlib.context import CryptContext
 import os
 from datetime import datetime, timedelta
 from typing import Union, Any, Literal
-from jose import jwt
+from jose import jwt, JWTError
+from fastapi import status
+
 from core.config import settings
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -12,8 +14,6 @@ password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 JWT_ACCESS_KEY = settings.auth_settings.JWT_ACCESS_KEY
 JWT_REFRESH_KEY = settings.auth_settings.JWT_REFRESH_KEY
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def get_hashed_password(password: str) -> str:
@@ -45,8 +45,6 @@ def create_token(
         encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_KEY, ALGORITHM)
     elif token_type == "Access":
         encoded_jwt = jwt.encode(to_encode, JWT_ACCESS_KEY, ALGORITHM)
-    elif token_type == "Access":
-        encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_KEY, ALGORITHM)
     else:
         raise ValueError('"token_types" can be only "Refresh" or "Access"')
     return encoded_jwt
