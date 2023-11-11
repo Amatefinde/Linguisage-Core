@@ -48,3 +48,37 @@ def create_token(
     else:
         raise ValueError('"token_types" can be only "Refresh" or "Access"')
     return encoded_jwt
+
+
+def decode_token(
+    token,
+    token_type: Literal["Refresh", "Access"],
+) -> int:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        if token_type == "Refresh":
+            payload = jwt.decode(token, JWT_REFRESH_KEY, ALGORITHM)
+        elif token_type == "Access":
+            payload = jwt.decode(token, JWT_ACCESS_KEY, ALGORITHM)
+        else:
+            raise ValueError('"token_types" can be only "Refresh" or "Access"')
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+
+        return int(user_id)
+
+    except JWTError:
+        raise credentials_exception
+
+
+if __name__ == "__main__":
+    decode_token(
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTk3MDkzMjQsInN1YiI6IjEifQ.p_Q-leSDCf2txjua8SGszdeLMpXOa9wOLg8aQz1qx98",
+        token_type="Access",
+    )
