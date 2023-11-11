@@ -37,3 +37,10 @@ class UserSchema(UserBaseSchema):
 class LoginUserSchema(BaseModel):
     email: EmailStr
     password: str
+
+
+class SessionSchema(BaseModel):
+    user_id: int
+    token: str
+    ip: str
+    browser_header: str
