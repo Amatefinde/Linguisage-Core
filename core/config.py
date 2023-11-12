@@ -29,5 +29,7 @@ class Settings(BaseSettings):
 
     auth_settings: AuthSettings = AuthSettings()
 
+    content_manager_url: str = os.environ.get("CONTENT_MANAGER_URL")
+
 
 settings = Settings()
