@@ -91,6 +91,11 @@ async def login_user(
     user_data_from_db = await crud.get_user_by_email(
         email=user_data.username, session=session
     )
+    if not user_data_from_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with email {user_data.username} bot found",
+        )
     is_valid_password = verify_password(
         user_data.password, user_data_from_db.hash_password
     )
