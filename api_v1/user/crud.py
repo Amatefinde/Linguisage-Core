@@ -58,16 +58,27 @@ async def delete_user(session: AsyncSession, user: User):
     await session.commit()
 
 
-async def add_user_session(session: AsyncSession, user_session: SessionSchema):
-    user = await get_user_by_id(session=session, user_id=user_session.user_id)
-
+async def find_user_session(
+    session: AsyncSession,
+    user_id: int,
+    ip: str,
+    user_agent: str,
+) -> Session:
     stmt = (
         select(Session)
-        .where(Session.user_id == user_session.user_id)
-        .where(Session.ip == user_session.ip)
-        .where(Session.browser_header == user_session.browser_header)
+        .where(Session.user_id == user_id)
+        .where(Session.ip == ip)
+        .where(Session.browser_header == user_agent)
     )
-    db_session = await session.scalar(stmt)
+
+    return await session.scalar(stmt)
+
+
+async def add_user_session(session: AsyncSession, user_session: SessionSchema):
+    user = await get_user_by_id(session=session, user_id=user_session.user_id)
+    db_session = await find_user_session(
+        session, user_session.user_id, user_session.ip, user_session.browser_header
+    )
     if db_session:
         db_session.token = user_session.token
         await session.commit()
@@ -85,8 +96,6 @@ async def add_user_session(session: AsyncSession, user_session: SessionSchema):
     return db_session
 
 
-async def delete_user_session(session: AsyncSession, user_session: SessionSchema):
-    user = await get_user_by_id(session=session, user_id=user_session.user_id)
-    db_session = Session(**user_session.model_dump(), user=user)
+async def delete_user_session(session: AsyncSession, db_session: Session):
     await session.delete(db_session)
     await session.commit()
