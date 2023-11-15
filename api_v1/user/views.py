@@ -94,7 +94,7 @@ async def login_user(
     if not user_data_from_db:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with email {user_data.username} bot found",
+            detail=f"User with this email not found",
         )
     is_valid_password = verify_password(
         user_data.password, user_data_from_db.hash_password
@@ -131,22 +131,21 @@ async def read_users_me(
     return current_user
 
 
-# @router.get("/log_out/", status_code=status.HTTP_204_NO_CONTENT)
-# async def login_user(
-#     request: Request,
-#     response: Response,
-#     user_agent: Annotated[str | None, Header()] = None,
-#     session: AsyncSession = Depends(db_helper.session_dependency),
-# ):
-#     refresh_token = request.cookies.get("linguisage_refresh_token")
-#
-#     user_session = SessionSchema(
-#         user_id=user_data_from_db.id,
-#         ip=request.client.host,
-#         browser_header=user_agent,
-#         token=refresh_token,
-#     )
-#
-#     response.delete_cookie("linguisage_refresh_token")
-#
-#     await crud.delete_user_session(session=session, user_session=user_session)
+@router.get("/log_out", status_code=status.HTTP_204_NO_CONTENT)
+async def login_user(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_agent: Annotated[str | None, Header()] = None,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    session_db = await crud.find_user_session(
+        session, current_user.id, request.client.host, user_agent
+    )
+    await crud.delete_user_session(session=session, db_session=session_db)
+
+    response.set_cookie(
+        key="linguisage_refresh_token",
+        value="",
+        httponly=True,
+    )
