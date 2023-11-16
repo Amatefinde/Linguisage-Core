@@ -13,9 +13,9 @@ class WordMeaning(Base):
     content: Mapped[str]
     status: Mapped[str] = mapped_column(status)
     literature_id: Mapped[int] = mapped_column(
-        ForeignKey="literature.id", nullable=True
+        ForeignKey("literature.id"), nullable=True
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey="user.id")
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
     literature: Mapped["Literature"] = relationship(back_populates="words")
     user: Mapped["User"] = relationship(back_populates="words")
