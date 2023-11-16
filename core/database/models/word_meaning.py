@@ -6,7 +6,7 @@ from typing import Literal, TYPE_CHECKING
 if TYPE_CHECKING:
     from . import User, Literature
 
-status = Enum("complete", "in_process", "in_queue")
+status = Enum("complete", "in_process", "in_queue", name="word_status")
 
 
 class WordMeaning(Base):
