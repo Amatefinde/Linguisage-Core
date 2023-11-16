@@ -1,6 +1,6 @@
 from core.database.base import Base
 
-from sqlalchemy import TIMESTAMP, ForeignKey
+from sqlalchemy import TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from datetime import datetime
@@ -13,7 +13,9 @@ if TYPE_CHECKING:
 class Literature(Base):
     title: Mapped[str]
     content: Mapped[int] = mapped_column(unique=True)
-    add_datetime: Mapped[datetime] = mapped_column(TIMESTAMP)
+    add_datetime: Mapped[datetime] = mapped_column(
+        server_default=func.now(), default=datetime.utcnow()
+    )
     last_open_datetime: Mapped[datetime | None] = mapped_column(TIMESTAMP)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
