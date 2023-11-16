@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .user import User
+    from .user import User, WordMeaning
 
 
 class Literature(Base):
@@ -20,3 +20,5 @@ class Literature(Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     user: Mapped["User"] = relationship(back_populates="literatures")
+
+    words: Mapped[list["WordMeaning"]] = relationship(back_populates="literature")
