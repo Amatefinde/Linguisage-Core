@@ -20,7 +20,7 @@ class UserWordMeaning(Base):
     literature: Mapped["Literature"] = relationship(back_populates="words")
     user: Mapped["User"] = relationship(back_populates="words")
     images: Mapped[list["UserWordImage"]] = relationship(
-        back_populates="user_word_meaning"
+        back_populates="user_word_meaning", cascade="all, delete-orphan"
     )
 
 
