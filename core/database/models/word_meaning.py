@@ -9,8 +9,8 @@ if TYPE_CHECKING:
 status = Enum("complete", "in_process", "in_queue", name="word_status")
 
 
-class WordMeaning(Base):
-    content: Mapped[str]
+class UserWordMeaning(Base):
+    content: Mapped[int]
     status: Mapped[str] = mapped_column(status)
     literature_id: Mapped[int] = mapped_column(
         ForeignKey("literature.id"), nullable=True
@@ -19,3 +19,15 @@ class WordMeaning(Base):
 
     literature: Mapped["Literature"] = relationship(back_populates="words")
     user: Mapped["User"] = relationship(back_populates="words")
+    images: Mapped[list["UserWordImage"]] = relationship(
+        back_populates="user_word_meaning"
+    )
+
+
+class UserWordImage(Base):
+    content: Mapped[int]
+    user_word_meaning_id: Mapped["UserWordMeaning"] = mapped_column(
+        ForeignKey("userwordmeaning.id")
+    )
+
+    user_word_meaning: Mapped["UserWordMeaning"] = relationship(back_populates="images")

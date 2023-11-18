@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     auth_settings: AuthSettings = AuthSettings()
 
     content_manager_url: str = os.environ.get("CONTENT_MANAGER_URL")
+    neural_module_url: str = os.environ.get("NEURAL_MODULE_URL")
 
 
 settings = Settings()
