@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import Literature, WordMeaning
+    from . import Literature, UserWordMeaning
 
 
 class User(Base):
@@ -27,7 +27,7 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
-    words: Mapped[list["WordMeaning"]] = relationship(back_populates="word")
+    words: Mapped[list["UserWordMeaning"]] = relationship(back_populates="user")
 
 
 class Session(Base):
