@@ -1,6 +1,7 @@
 from fastapi import Depends, Query, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
+from datetime import datetime
 from api_v1.user import get_current_user
 from core.database.models import User
 from . import crud
@@ -15,8 +16,12 @@ async def current_user_literature_by_id(
     literature_db = await crud.get_literature_by_id(
         session=session, literature_id=literature_id
     )
+
     if not literature_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    literature_db.last_open_datetime = datetime.utcnow()
+    await session.commit()
 
     if literature_db.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
