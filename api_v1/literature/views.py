@@ -5,7 +5,7 @@ from core.database.models import User
 from . import crud
 from core.database import db_helper
 from api_v1.user import get_current_user
-from . import content_provider
+from core.providers import content_provider
 from .schemas import LiteratureResponseScheme
 from .dependencies import current_user_literature_by_id
 
@@ -22,6 +22,21 @@ async def get_literature(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     return await crud.get_all_user_literature(session=session, user_id=current_user.id)
+
+
+@router.get("/last")
+async def get_last_opened_literature(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    db_literature = await crud.get_last_opened(session, current_user.id)
+    if db_literature:
+        literature_pages = content_provider.get_literature_pages(
+            db_literature.content, 1, 1
+        )
+        setattr(db_literature, "cover", literature_pages[0]["img"])
+        return db_literature
+    return None
 
 
 @router.post("/", response_model=LiteratureResponseScheme)

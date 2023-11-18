@@ -44,3 +44,13 @@ async def delete_literature(
 ):
     await session.delete(db_literature)
     await session.commit()
+
+
+async def get_last_opened(session: AsyncSession, user_id: int):
+    stmt = (
+        select(Literature)
+        .where(Literature.user_id == user_id)
+        .order_by(Literature.last_open_datetime.desc(), Literature.add_datetime.desc())
+    )
+    result = await session.scalar(stmt)
+    return result
