@@ -72,7 +72,7 @@ async def update_user(
     )
 
 
-@router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user: User = Depends(user_by_id),
     session: AsyncSession = Depends(db_helper.session_dependency),
@@ -80,7 +80,7 @@ async def delete_user(
     return await crud.delete_user(session=session, user=user)
 
 
-@router.post("/login/")
+@router.post("/login")
 async def login_user(
     request: Request,
     response: Response,
