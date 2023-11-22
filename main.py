@@ -21,15 +21,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.middleware("")
-async def add_cors_header(request: Request, call_next):
-    print(request.__dict__)
-    # if "Origin" not in request.headers:
-    #     response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
-    response = await call_next(request)
-    return response
-
-
 origins = [
     "http://192.168.31.23:3000",
     "http://93.81.252.160:8001",
