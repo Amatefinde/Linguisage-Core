@@ -31,7 +31,7 @@ async def get_last_opened_literature(
 ):
     db_literature = await crud.get_last_opened(session, current_user.id)
     if db_literature:
-        literature_pages = content_provider.get_literature_pages(
+        literature_pages = await content_provider.get_literature_pages(
             db_literature.content, 1, 1
         )
         setattr(db_literature, "cover", literature_pages[0]["img"])
@@ -49,7 +49,7 @@ async def add_literature(
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-    content_id = content_provider.add_literature(file.file, use_ocr)
+    content_id = await content_provider.add_literature(file.file, use_ocr)
     if content_id:
         db_literature = await crud.add_literature_by_user_id(
             session=session,
@@ -68,7 +68,7 @@ async def get_literature_pages(
     end_page: int = 0,
     literature_db=Depends(current_user_literature_by_id),
 ):
-    literature_pages = content_provider.get_literature_pages(
+    literature_pages = await content_provider.get_literature_pages(
         literature_db.content, start_page, end_page
     )
     return literature_pages
