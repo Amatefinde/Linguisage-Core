@@ -1,16 +1,12 @@
 from typing import Annotated
+from api_v1.user import get_current_user
+from core.providers.Dictionary import get_word_by_query, WordDTO
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.config import settings
 from core.database import db_helper
 from core.database.models import User, UserWordImage
 from . import crud
-from core.providers.neural_provider import get_meaning
 from fastapi import Depends, APIRouter, HTTPException, status
-from api_v1.user import get_current_user
-import requests
-from .utils import get_meanings_from_word_info
 from .schemas import (
     MeaningResponseScheme,
     UserWordMeaningRequestScheme,
@@ -21,34 +17,19 @@ from .schemas import (
 router = APIRouter(prefix="/words", tags=["Words"])
 
 
-@router.get("/meaning")
-async def get_meaning_for_word(word: str, context: str = None):
-    get_word_endpoint_url = settings.content_manager_url + "/word/get"
-    response = requests.get(
-        get_word_endpoint_url,
-        params={"word": word},
-    )
-    if response.status_code == 404:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Not yet info about this world in db",
-        )
-
-    word_info = response.json()
-
-    if context:
-        meanings: list[str] = get_meanings_from_word_info(word_info)
-        response_meaning = get_meaning(
-            meanings=meanings, word=word_info["content"], context=context
-        )
-        word_info["current_meaning"] = response_meaning.meaning
-    else:
-        word_info["current_meaning"] = None
-
-    return word_info
+@router.get("/senses", response_model=WordDTO)
+async def get_meaning_for_word(
+    word: str,
+    download_if_not_found: bool,
+    context: str = None,
+):
+    sense: WordDTO | None = await get_word_by_query(word, download_if_not_found)
+    if sense:
+        return sense
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
-@router.post("/user/meanings", status_code=status.HTTP_201_CREATED)
+@router.post("/users/senses", status_code=status.HTTP_201_CREATED)
 async def add_meaning_to_user(
     user_word_meaning: UserWordMeaningRequestScheme,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -62,8 +43,8 @@ async def add_meaning_to_user(
 
 
 @router.post(
-    "/user/meanings/image",
-    summary="Pair image to user meaning",
+    "/users/sense/image",
+    summary="Pair image to user sense",
     status_code=status.HTTP_201_CREATED,
 )
 async def pair_image_to_user_meaning(
@@ -85,7 +66,7 @@ async def pair_image_to_user_meaning(
     )
 
 
-@router.get("user/meanings", summary="Get list of user meanings with photo")
+@router.get("users/senses", summary="Get list of user meanings with photo")
 async def get_list_of_user_meanings_with_img(
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),

@@ -31,6 +31,7 @@ class Settings(BaseSettings):
 
     content_manager_url: str = os.environ.get("CONTENT_MANAGER_URL")
     neural_module_url: str = os.environ.get("NEURAL_MODULE_URL")
+    DICTIONARY_MC_URL: str
 
 
 settings = Settings()
