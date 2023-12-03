@@ -2,10 +2,10 @@ __all__ = (
     "User",
     "Session",
     "Literature",
-    "UserWordMeaning",
-    "UserWordImage",
+    "Sense",
+    "Image",
 )
 
 from .user import User, Session
 from .literature import Literature
-from .word_meaning import UserWordMeaning, UserWordImage
+from .sense import Sense, Image

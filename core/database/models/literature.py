@@ -7,12 +7,12 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .user import User, UserWordMeaning
+    from . import User, Sense
 
 
 class Literature(Base):
     title: Mapped[str]
-    content: Mapped[int] = mapped_column(unique=True)
+    f_literature_id: Mapped[int] = mapped_column(unique=True)
     add_datetime: Mapped[datetime] = mapped_column(
         server_default=func.now(), default=datetime.utcnow()
     )
@@ -21,4 +21,4 @@ class Literature(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     user: Mapped["User"] = relationship(back_populates="literatures")
 
-    words: Mapped[list["UserWordMeaning"]] = relationship(back_populates="literature")
+    senses: Mapped[list["Sense"]] = relationship(back_populates="literature")

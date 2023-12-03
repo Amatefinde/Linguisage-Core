@@ -1,36 +1,26 @@
 from pydantic import BaseModel, ConfigDict
+from core.providers.Dictionary import SenseDTO
 
 
-class MeaningResponseScheme(BaseModel):
+class SSenseNeuralResponseScheme(BaseModel):
+    """Scheme for validate answer by NeuralMS"""
+
     idx: int
-    meaning: str
+    sense: str
     spentTime: float
 
 
-class UserWordMeaningRequestScheme(BaseModel):
-    content: int
+class SPairUserAndSense(BaseModel):
+    f_sense_id: int
     literature_id: int | None = None
     status: str = "in_queue"
 
 
-class UserWordMeaningScheme(UserWordMeaningRequestScheme):
-    user_id: int
+class SPairSenseAndImages(BaseModel):
+    f_sense_id: int
+    f_images_id: list[int]
 
 
-class Image(BaseModel):
-    content: int
-    model_config = ConfigDict(from_attributes=True)
-
-
-class LinkMeaningWithImagesScheme(BaseModel):
+class SResponseSenses(BaseModel):
     id: int
-    content: int
-    images: list[Image]
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserWordMeaningResponseScheme(BaseModel):
-    word: str
-    meaning: str
-    short_meaning: str
+    sense: SenseDTO

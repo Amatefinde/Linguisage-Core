@@ -5,14 +5,14 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import Literature, UserWordMeaning
+    from . import Literature, Sense
 
 
 class User(Base):
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(40))
     hash_password: Mapped[str] = mapped_column(String, nullable=False)
-    registration_date: Mapped[datetime] = mapped_column(
+    registered_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, default=datetime.utcnow()
     )
     training_batch_size: Mapped[int] = mapped_column(Integer, default=20)
@@ -27,7 +27,7 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
-    words: Mapped[list["UserWordMeaning"]] = relationship(back_populates="user")
+    senses: Mapped[list["Sense"]] = relationship(back_populates="user")
 
 
 class Session(Base):
