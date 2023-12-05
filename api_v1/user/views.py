@@ -46,12 +46,12 @@ async def create_user(
     return await crud.add_user(session=session, user=user)
 
 
-@router.get("/{user_id}/", response_model=UserSchema)
+@router.get("/{user_id}", response_model=UserSchema)
 async def get_user(user: User = Depends(user_by_id)):
     return user
 
 
-@router.patch("/{user_id}/", response_model=UserSchema)
+@router.patch("/{user_id}", response_model=UserSchema)
 async def update_user(
     new_user: UserUpdateSchema,
     user: User = Depends(user_by_id),
