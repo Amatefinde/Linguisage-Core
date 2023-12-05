@@ -1,12 +1,12 @@
 from typing import Annotated
 from api_v1.user import get_current_user
 from core.providers.Dictionary import get_word_by_query, WordDTO
-
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import db_helper
 from core.database.models import User, Image, Sense
 from . import crud
-from .schemas import SPairUserAndSense
+from .schemas import SPairUserAndSense, SenseWithImagesDTO, SPairSenseAndImages
 from fastapi import Depends, APIRouter, HTTPException, status
 
 router = APIRouter(prefix="/words", tags=["Words"])
@@ -77,3 +77,43 @@ async def get_user_senses(
         current_user,
     )
     return db_user_meaning_with_img
+
+
+@router.put("/users/senses/images", summary="Set images for user sense")
+async def set_images_for_user_sense(
+    sense: SPairSenseAndImages,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    try:
+        sense_db: Sense = await crud.get_user_sense_by_f_id_with_f_images_id(
+            session, sense.f_sense_id
+        )
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Sense with id {sense.f_sense_id} not found",
+        )
+    if sense_db.user != current_user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    await crud.set_images_for_user_sense(session, sense_db, sense.f_images_id)
+
+
+@router.delete("/users/senses", summary="Set images for user sense")
+async def set_images_for_user_sense(
+    f_sense_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    try:
+        sense_db: Sense = await crud.get_user_sense_by_f_id_with_f_images_id(
+            session, f_sense_id
+        )
+    except NoResultFound:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Sense with id {f_sense_id} not found",
+        )
+    if sense_db.user != current_user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    await crud.delete_user_sense(session, sense_db)
