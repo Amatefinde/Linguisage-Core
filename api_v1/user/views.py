@@ -20,6 +20,13 @@ from api_v1.auth_tools.auth import verify_password, create_token
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
+@router.get("/me", response_model=UserResponseSchema | None)
+async def read_users_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return current_user
+
+
 @router.get("/", response_model=List[UserSchema])
 async def get_users(
     session: AsyncSession = Depends(db_helper.session_dependency),
@@ -122,13 +129,6 @@ async def login_user(
         httponly=True,
     )
     return {"access_token": access_token, "token_type": "Bearer"}
-
-
-@router.get("/me", response_model=UserResponseSchema | None)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    return current_user
 
 
 @router.get("/log_out", status_code=status.HTTP_204_NO_CONTENT)
