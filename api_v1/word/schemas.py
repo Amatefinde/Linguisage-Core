@@ -1,5 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from core.providers.Dictionary import SenseDTO
+from typing import Literal
 
 
 class SSenseNeuralResponseScheme(BaseModel):
@@ -11,9 +12,10 @@ class SSenseNeuralResponseScheme(BaseModel):
 
 
 class SPairUserAndSense(BaseModel):
-    f_sense_id: int
-    literature_id: int | None = None
-    status: str = "in_queue"
+    f_sense_id: int = Field(ge=1)
+    f_images_id: list[int] = Field(default=[])
+    literature_id: int | None = Field(ge=1, default=None)
+    status: Literal["complete", "in_process", "in_queue"] = "in_queue"
 
 
 class SPairSenseAndImages(BaseModel):
@@ -24,3 +26,21 @@ class SPairSenseAndImages(BaseModel):
 class SResponseSenses(BaseModel):
     id: int
     sense: SenseDTO
+
+
+#################################
+class BaseDTO(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ImageDTO(BaseDTO):
+    f_img_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SenseWithImagesDTO(BaseDTO):
+    f_sense_id: int
+    images: list[ImageDTO]
+
+    model_config = ConfigDict(from_attributes=True)
