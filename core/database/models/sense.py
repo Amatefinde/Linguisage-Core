@@ -26,7 +26,7 @@ class Sense(Base):
 
 
 class Image(Base):
-    f_img: Mapped[int]
+    f_img_id: Mapped[int]
 
-    user_word_meaning_id: Mapped["Sense"] = mapped_column(ForeignKey("sense.id"))
-    user_word_meaning: Mapped["Sense"] = relationship(back_populates="images")
+    sense_id: Mapped["Sense"] = mapped_column(ForeignKey("sense.id"))
+    senses: Mapped["Sense"] = relationship(back_populates="images")
