@@ -16,7 +16,7 @@ class UserCreateSchema(UserBaseSchema):
 
 class UserResponseSchema(UserBaseSchema):
     id: int
-    registration_date: datetime
+    registered_at: datetime
 
 
 class UserUpdateSchema(BaseModel):
@@ -31,7 +31,7 @@ class UserUpdateSchema(BaseModel):
 class UserSchema(UserBaseSchema):
     id: int
     hash_password: str
-    registration_date: datetime
+    registered_at: datetime
 
 
 class LoginUserSchema(BaseModel):
