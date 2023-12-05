@@ -1,7 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, field_validator
-from core.config import settings
+from pydantic import BaseModel, ConfigDict, field_validator, Field
 
 
 class BaseDTO(BaseModel):
@@ -63,6 +62,7 @@ class SWordForSenseP(SBaseP):
 
 
 class SSenseP(SBaseP):
+    f_sense_id: int | None = Field(default=None, alias="id")
     lvl: Literal["A1", "A2", "B1", "B2", "C1", "C2"] | None = None
     short_cut: str | None = None
     definition: str
