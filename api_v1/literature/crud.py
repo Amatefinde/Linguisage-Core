@@ -39,10 +39,11 @@ async def get_all_user_literature(
     stmt = select(Literature).where(Literature.user_id == user_id)
 
     literature_db = await session.scalars(stmt)
-    literatures = [LiteratureResponseScheme(**x.__dict__) for x in literature_db]
+    literatures = [LiteratureResponseScheme.model_validate(x) for x in literature_db]
     async with aiohttp.ClientSession() as session:
         tasks = [
-            get_literature_cover(session, instance.content) for instance in literatures
+            get_literature_cover(session, instance.f_literature_id)
+            for instance in literatures
         ]
 
         books = await asyncio.gather(*tasks)
@@ -61,10 +62,13 @@ async def add_literature_by_user_id(
     session: AsyncSession,
     title: str,
     user_id: int,
-    content_id: int,
+    f_literature_id: int,
 ):
     db_literature = Literature(
-        title=title, content=content_id, add_datetime=datetime.utcnow(), user_id=user_id
+        title=title,
+        f_literature_id=f_literature_id,
+        add_datetime=datetime.utcnow(),
+        user_id=user_id,
     )
 
     session.add(db_literature)

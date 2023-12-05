@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from core.database.models import User
+from core.database.models import User, Literature
 from . import crud
 from core.database import db_helper
 from api_v1.user import get_current_user
@@ -32,7 +32,7 @@ async def get_last_opened_literature(
     db_literature = await crud.get_last_opened(session, current_user.id)
     if db_literature:
         literature_pages = await content_provider.get_literature_pages(
-            db_literature.content, 1, 1
+            db_literature.f_literature_id, 1, 1
         )
         setattr(db_literature, "cover", literature_pages[0]["img"])
         return db_literature
@@ -49,13 +49,13 @@ async def add_literature(
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-    content_id = await content_provider.add_literature(file.file, use_ocr)
-    if content_id:
+    f_literature_id = await content_provider.add_literature(file.file, use_ocr)
+    if f_literature_id:
         db_literature = await crud.add_literature_by_user_id(
             session=session,
             user_id=current_user.id,
             title=file.filename,
-            content_id=content_id,
+            f_literature_id=f_literature_id,
         )
         return db_literature
 
@@ -66,10 +66,10 @@ async def add_literature(
 async def get_literature_pages(
     start_page: int = 1,
     end_page: int = 0,
-    literature_db=Depends(current_user_literature_by_id),
+    literature_db: Literature = Depends(current_user_literature_by_id),
 ):
     literature_pages = await content_provider.get_literature_pages(
-        literature_db.content, start_page, end_page
+        literature_db.f_literature_id, start_page, end_page
     )
     return literature_pages
 

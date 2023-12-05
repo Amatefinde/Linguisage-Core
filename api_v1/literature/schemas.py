@@ -9,6 +9,6 @@ class LiteratureResponseScheme(BaseModel):
     last_open_datetime: datetime | None = None
     user_id: int
     cover: str | None = None
-    content: int
+    f_literature_id: int
 
     model_config = ConfigDict(from_attributes=True)
