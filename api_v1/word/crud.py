@@ -51,3 +51,37 @@ async def get_user_senses(
 ) -> tuple[dictionary_provider.SSenseP]:
     senses_db = await _get_db_user_senses(session, user)
     return await _get_senses_with_images_from_dictionary(senses_db)
+
+
+async def get_user_sense_by_f_id_with_f_images_id(
+    session: AsyncSession,
+    f_sense_id: int,
+) -> Sense:
+    stmt = (
+        select(Sense)
+        .where(Sense.f_sense_id == f_sense_id)
+        .options(selectinload(Sense.images))
+    )
+    db_response = await session.execute(stmt)
+    return db_response.scalar_one()
+
+
+async def set_images_for_user_sense(
+    session: AsyncSession,
+    sense_db: Sense,
+    f_images_id: list[int],
+) -> Sense:
+    sense_db.images = [
+        Image(f_img_id=f_image_id, sense_id=sense_db.id) for f_image_id in f_images_id
+    ]
+    await session.commit()
+    await session.refresh(sense_db)
+    return sense_db
+
+
+async def delete_user_sense(
+    session: AsyncSession,
+    sense_db: Sense,
+) -> None:
+    await session.delete(sense_db)
+    await session.commit()
