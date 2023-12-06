@@ -36,11 +36,7 @@ class BaseDTO(BaseModel):
 class ImageDTO(BaseDTO):
     f_img_id: int
 
-    model_config = ConfigDict(from_attributes=True)
-
 
 class SenseWithImagesDTO(BaseDTO):
     f_sense_id: int
     images: list[ImageDTO]
-
-    model_config = ConfigDict(from_attributes=True)
