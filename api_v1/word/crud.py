@@ -41,7 +41,7 @@ async def _get_senses_with_images_from_dictionary(senses_db):
     for sense in senses_db:
         sense_dto = SenseWithImagesDTO.model_validate(sense)
         senses_from_dictionary_tasks.append(
-            dictionary_provider.get_senses_with_images(sense_dto)
+            dictionary_provider.get_sense_with_images(sense_dto)
         )
     return await asyncio.gather(*senses_from_dictionary_tasks)
 
@@ -51,6 +51,15 @@ async def get_user_senses(
 ) -> tuple[dictionary_provider.SSenseP]:
     senses_db = await _get_db_user_senses(session, user)
     return await _get_senses_with_images_from_dictionary(senses_db)
+
+
+async def get_user_sense_by_f_id(
+    session: AsyncSession,
+    f_sense_id: int,
+) -> Sense:
+    stmt = select(Sense).where(Sense.f_sense_id == f_sense_id)
+    db_response = await session.execute(stmt)
+    return db_response.scalar_one()
 
 
 async def get_user_sense_by_f_id_with_f_images_id(
