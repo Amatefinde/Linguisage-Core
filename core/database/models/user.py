@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import Literature, Sense
+    from . import Literature, Sense, Answer
 
 
 class User(Base):
@@ -28,6 +28,7 @@ class User(Base):
     )
 
     senses: Mapped[list["Sense"]] = relationship(back_populates="user")
+    answers: Mapped[list["Answer"]] = relationship(back_populates="user")
 
 
 class Session(Base):
