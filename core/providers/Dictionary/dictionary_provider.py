@@ -1,3 +1,7 @@
+import asyncio
+
+from aiohttp import ClientSession
+
 from core.config import settings
 from .schemas import WordDTO, SSenseP
 
@@ -21,10 +25,21 @@ async def get_word_by_query(query: str, download_if_not_found=True) -> WordDTO |
                 return word
 
 
-async def get_senses_with_images(sense: "SenseWithImagesDTO") -> SSenseP:
+async def _get_sense_with_image(session: ClientSession, sense: "SenseWithImagesDTO"):
     url = settings.DICTIONARY_MC_URL + f"/api/v1/words/sense/{sense.f_sense_id}"
     params = {"images_id": [img.f_img_id for img in sense.images]}
+
+    async with session.get(url, params=params) as response:
+        if response.status == 200:
+            return SSenseP.model_validate(await response.json())
+
+
+async def get_sense_with_images(sense: "SenseWithImagesDTO") -> SSenseP:
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params) as response:
-            if response.status == 200:
-                return SSenseP.model_validate(await response.json())
+        return await _get_sense_with_image(session, sense)
+
+
+async def get_senses_with_images(senses: list["SenseWithImagesDTO"]) -> list[SSenseP]:
+    async with aiohttp.ClientSession() as session:
+        tasks = [_get_sense_with_image(session, sense) for sense in senses]
+        return await asyncio.gather(*tasks)
