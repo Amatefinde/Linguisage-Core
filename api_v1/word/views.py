@@ -9,6 +9,7 @@ from . import crud
 from .schemas import SPairUserAndSense, SenseWithImagesDTO, SPairSenseAndImages
 from fastapi import Depends, APIRouter, HTTPException, status
 from api_v1 import train_logic
+from core.providers import neural_provider
 
 
 router = APIRouter(prefix="/words", tags=["Words"])
@@ -20,10 +21,17 @@ async def get_meaning_for_word(
     download_if_not_found: bool = True,
     context: str = None,
 ):
-    sense: WordDTO | None = await get_word_by_query(query, download_if_not_found)
-    if sense:
-        sense.current_sense_id = sense.senses[0].id  # todo
-        return sense
+    word: WordDTO | None = await get_word_by_query(query, download_if_not_found)
+    if word:
+        if context:
+            sense_definitions = [sense.definition for sense in word.senses]
+            wsd = await neural_provider.get_meaning(
+                word.word, context, sense_definitions
+            )
+            current_sense = word.senses.pop(wsd.idx)
+            word.senses.insert(0, current_sense)
+        word.current_sense_id = word.senses[0].id
+        return word
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
@@ -83,7 +91,7 @@ async def get_user_senses(
             session, sense.f_sense_id
         )
         sense.score = score_and_status.score
-        sense.status = score_and_status.status
+        sense.status = score_and_status.score
     return db_user_senses_with_images
 
 
