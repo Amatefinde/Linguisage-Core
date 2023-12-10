@@ -22,6 +22,7 @@ async def get_training(
     user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
+    await train_generator.define_mastered_senses(session, user)
     return await train_generator.generate(session, user, number)
 
 
