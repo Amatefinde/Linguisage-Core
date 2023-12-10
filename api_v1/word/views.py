@@ -8,6 +8,8 @@ from core.database.models import User, Image, Sense
 from . import crud
 from .schemas import SPairUserAndSense, SenseWithImagesDTO, SPairSenseAndImages
 from fastapi import Depends, APIRouter, HTTPException, status
+from api_v1 import train_logic
+
 
 router = APIRouter(prefix="/words", tags=["Words"])
 
@@ -72,11 +74,17 @@ async def get_user_senses(
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    db_user_meaning_with_img = await crud.get_user_senses(
+    db_user_senses_with_images = await crud.get_user_senses(
         session,
         current_user,
     )
-    return db_user_meaning_with_img
+    for sense in db_user_senses_with_images:
+        score_and_status = await train_logic.get_score_and_status_by_f_sense_id(
+            session, sense.f_sense_id
+        )
+        sense.score = score_and_status.score
+        sense.status = score_and_status.status
+    return db_user_senses_with_images
 
 
 @router.put("/users/senses/images", summary="Set images for user sense")
