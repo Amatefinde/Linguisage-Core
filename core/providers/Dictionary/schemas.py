@@ -66,6 +66,8 @@ class SSenseP(SBaseP):
     lvl: Literal["A1", "A2", "B1", "B2", "C1", "C2"] | None = None
     short_cut: str | None = None
     definition: str
+    status: Literal["complete", "in_process", "in_queue"] | None = None
+    score: float | None = None
     examples: list[SExamplesP] = None
     row_examples: list[SRowExamplesP] = None
     images: list[SImageP] = None
