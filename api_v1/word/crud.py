@@ -1,12 +1,10 @@
 import asyncio
-
-from sqlalchemy import Select, select
+from sqlalchemy import select
 from core.providers import dictionary_provider
 from .schemas import SPairUserAndSense, SenseWithImagesDTO
 from core.database.models import Sense, Image, User
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
-from core.config import settings
+from sqlalchemy.orm import selectinload
 
 
 async def pair_user_and_sense(
