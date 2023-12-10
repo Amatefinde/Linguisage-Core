@@ -21,6 +21,17 @@ async def set_sense_completed(session: AsyncSession, f_sense_id: int):
     await session.commit()
 
 
+async def set_sense_status(
+    session: AsyncSession,
+    f_sense_id: int,
+    status: Literal["complete", "in_process", "in_queue"],
+):
+    print("Поставили статус:", status)
+    db_sense = await get_user_sense_by_f_id(session, f_sense_id)
+    db_sense.status = status
+    await session.commit()
+
+
 async def get_senses_for_user(
     session: AsyncSession,
     user: User,
