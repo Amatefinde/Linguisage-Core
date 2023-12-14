@@ -23,13 +23,17 @@ async def get_meaning_for_word(
 ):
     word: WordDTO | None = await get_word_by_query(query, download_if_not_found)
     if word:
-        if context:
-            sense_definitions = [sense.definition for sense in word.senses]
-            wsd = await neural_provider.get_meaning(
-                word.word, context, sense_definitions
-            )
-            current_sense = word.senses.pop(wsd.idx)
-            word.senses.insert(0, current_sense)
+        # if context:
+        #     try:
+        #         sense_definitions = [sense.definition for sense in word.senses]
+        #         wsd = await neural_provider.get_meaning(
+        #             word.word, context, sense_definitions
+        #         )
+        #         current_sense = word.senses.pop(wsd.idx)
+        #         word.senses.insert(0, current_sense)
+        #     except neural_provider.GetMeaningError:
+        #         print("wsd module is not access now")
+
         word.current_sense_id = word.senses[0].id
         return word
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
