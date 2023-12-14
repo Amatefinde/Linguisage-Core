@@ -30,6 +30,7 @@ origins = [
     "http://localhost:3000",
     "http://192.168.31.1:0000",
     "http://26.96.4.216:3000",
+    "http://linguisage.ddns.net",
     "http://linguitest.ddns.net",
     "http://linguitest.ddns.net:80",
     "http://linguitest.ddns.net:7777",
