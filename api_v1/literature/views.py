@@ -79,4 +79,5 @@ async def delete_literature(
     literature_db=Depends(current_user_literature_by_id),
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
+    await content_provider.delete_literature(literature_db.f_literature_id)
     await crud.delete_literature(session=session, db_literature=literature_db)
