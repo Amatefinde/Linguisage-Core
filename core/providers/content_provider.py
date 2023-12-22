@@ -7,15 +7,6 @@ from core.config import settings
 import aiohttp
 
 
-# async def add_literature(file, use_ocr: bool = False) -> int | None:
-#     files = {"file": ("image.jpg", file)}
-#     url = settings.content_manager_url + "/literature/add"
-#     response = requests.post(url, files=files, params={"use_ocr": str(use_ocr).lower()})
-#     if response.status_code != 200:
-#         return
-#     return int(response.json())
-
-
 async def add_literature(file, use_ocr: bool = False) -> int | None:
     url = settings.content_manager_url + "/literature/add"
     data = aiohttp.FormData()
