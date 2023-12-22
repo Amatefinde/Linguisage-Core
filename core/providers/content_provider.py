@@ -39,35 +39,13 @@ async def get_literature_pages(
             return await response.json()
 
 
-async def get_word_meaning(meaning_id: int) -> dict:
-    url = settings.content_manager_url + "/word/get_word_meaning_by_id"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-            url,
-            params={
-                "meaning_id": meaning_id,
-            },
+async def delete_literature(f_file_id) -> int:
+    url = settings.content_manager_url + "/literature/delete"
+    timeout = ClientTimeout(total=60 * 60 * 3)  # Set timeout to 3 hours seconds
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with session.delete(
+            url, params={"literature_id": f_file_id}
         ) as response:
             if response.status != 200:
-                print(await response.json())
                 return
-            return await response.json()
-
-
-async def get_image_by_id(image_id: int) -> str:
-    url = settings.content_manager_url + "/word/image"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-            url,
-            params={
-                "image_id": image_id,
-            },
-        ) as response:
-            if response.status != 200:
-                print(await response.text())
-                return
-            return await response.text()
-
-
-if __name__ == "__main__":
-    print(get_image_by_id(234))
+            return int(await response.json())
