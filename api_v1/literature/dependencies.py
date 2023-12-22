@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from datetime import datetime
 from api_v1.user import get_current_user
-from core.database.models import User
+from core.database.models import User, Literature
 from . import crud
 from core.database import db_helper
 
@@ -12,7 +12,7 @@ async def current_user_literature_by_id(
     literature_id: Annotated[int, Query],
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),
-):
+) -> Literature:
     literature_db = await crud.get_literature_by_id(
         session=session, literature_id=literature_id
     )
