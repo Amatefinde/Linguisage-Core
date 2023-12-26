@@ -25,7 +25,7 @@ async def get_senses_for_word(
 ):
     word: WordDTO | None = await get_word_by_query(query, download_if_not_found)
     for sense in word.senses:
-        sense.user_have = await crud.check_pair_user_and_sense(session, sense.id, user)
+        sense.user_have = await crud.is_exist_pair_user_and_sense(session, sense.id, user)
     if word:
         # if context:
         #     try:
@@ -53,6 +53,8 @@ async def add_meaning_to_user(
     user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
+    if await crud.is_exist_pair_user_and_sense(session, s_pair_user_and_sense.from_user_id, user):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
     db_sense: Sense = await crud.pair_user_and_sense(session, s_pair_user_and_sense, user)
     return db_sense
 
