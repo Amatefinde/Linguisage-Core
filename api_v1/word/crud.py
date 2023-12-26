@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
 
-async def check_pair_user_and_sense(
+async def is_exist_pair_user_and_sense(
     session: AsyncSession,
     f_sense_id: int,
     user: User,
