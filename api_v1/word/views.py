@@ -16,12 +16,16 @@ router = APIRouter(prefix="/words", tags=["Words"])
 
 
 @router.get("/senses", response_model=WordDTO)
-async def get_meaning_for_word(
+async def get_senses_for_word(
     query: str,
+    user: Annotated[User, Depends(get_current_user)],
     download_if_not_found: bool = True,
     context: str = None,
+    session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     word: WordDTO | None = await get_word_by_query(query, download_if_not_found)
+    for sense in word.senses:
+        sense.user_have = await crud.check_pair_user_and_sense(session, sense.id, user)
     if word:
         # if context:
         #     try:
@@ -49,9 +53,7 @@ async def add_meaning_to_user(
     user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    db_sense: Sense = await crud.pair_user_and_sense(
-        session, s_pair_user_and_sense, user
-    )
+    db_sense: Sense = await crud.pair_user_and_sense(session, s_pair_user_and_sense, user)
     return db_sense
 
 
@@ -126,9 +128,7 @@ async def set_images_for_user_sense(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     try:
-        sense_db: Sense = await crud.get_user_sense_by_f_id_with_f_images_id(
-            session, f_sense_id
-        )
+        sense_db: Sense = await crud.get_user_sense_by_f_id_with_f_images_id(session, f_sense_id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
