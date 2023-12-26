@@ -74,27 +74,25 @@ async def _set_row_examples_hidden_word(
 ) -> list[dictionary_provider.SSenseP]:
     for sense in senses:
         word = sense.word.word
+        row_examples_hidden_word = []
         for row_example in sense.row_examples:
             row_example_hidden_word = row_example.model_copy()
-            row_example_hidden_word.row_example = (
-                row_example_hidden_word.row_example.replace(word, "_" * len(word))
+            row_example_hidden_word.row_example = row_example_hidden_word.row_example.replace(
+                word, "_" * len(word)
             )
-            sense.row_examples_hidden_word.append(row_example_hidden_word)
+            row_examples_hidden_word.append(row_example_hidden_word)
+        sense.row_examples_hidden_word = row_examples_hidden_word
     return senses
 
 
 async def generate(
     session: AsyncSession, user: User, number: int
 ) -> list[dictionary_provider.SSenseP]:
-    senses_for_training: list[SenseDTO] = await _get_senses_for_training(
-        session, user, number
-    )
+    senses_for_training: list[SenseDTO] = await _get_senses_for_training(session, user, number)
     sense_ready_for_send_to_dictionary = [
         SenseWithImagesDTO.model_validate(sense) for sense in senses_for_training
     ]
-    senses: list[
-        dictionary_provider.SSenseP
-    ] = await dictionary_provider.get_senses_with_images(
+    senses: list[dictionary_provider.SSenseP] = await dictionary_provider.get_senses_with_images(
         sense_ready_for_send_to_dictionary
     )
     return await _set_row_examples_hidden_word(senses)
