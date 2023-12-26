@@ -4,7 +4,6 @@ from .scemas import AnswerDTO, SenseDTO
 from .crud import get_senses_for_user, set_sense_completed, set_sense_status
 from core.database.models import User
 from sqlalchemy.ext.asyncio import AsyncSession
-from random import choices
 from api_v1.word.schemas import SenseWithImagesDTO
 from core.providers import dictionary_provider
 
@@ -70,13 +69,32 @@ async def _get_senses_for_training(
         return picked_senses
 
 
+async def _set_row_examples_hidden_word(
+    senses: list[dictionary_provider.SSenseP],
+) -> list[dictionary_provider.SSenseP]:
+    for sense in senses:
+        word = sense.word.word
+        for row_example in sense.row_examples:
+            row_example_hidden_word = row_example.model_copy()
+            row_example_hidden_word.row_example = (
+                row_example_hidden_word.row_example.replace(word, "_" * len(word))
+            )
+            sense.row_examples_hidden_word.append(row_example_hidden_word)
+    return senses
+
+
 async def generate(
     session: AsyncSession, user: User, number: int
 ) -> list[dictionary_provider.SSenseP]:
     senses_for_training: list[SenseDTO] = await _get_senses_for_training(
         session, user, number
     )
-    sense_ready_for_send = [
+    sense_ready_for_send_to_dictionary = [
         SenseWithImagesDTO.model_validate(sense) for sense in senses_for_training
     ]
-    return await dictionary_provider.get_senses_with_images(sense_ready_for_send)
+    senses: list[
+        dictionary_provider.SSenseP
+    ] = await dictionary_provider.get_senses_with_images(
+        sense_ready_for_send_to_dictionary
+    )
+    return await _set_row_examples_hidden_word(senses)

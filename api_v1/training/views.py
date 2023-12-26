@@ -27,11 +27,6 @@ async def get_training(
 ):
     await train_generator.define_mastered_senses(session, user)
     bunch_train_content: list[SSenseP] = await train_generator.generate(session, user, number)
-    for train_content in bunch_train_content:
-        word = train_content.word.word
-        for example in train_content.row_examples:
-            ready_row_example = example.row_example.replace(word, "_"*len(word))
-            example.row_example = ready_row_example
     return bunch_train_content
 
 

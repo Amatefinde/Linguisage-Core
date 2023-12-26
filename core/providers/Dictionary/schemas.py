@@ -70,6 +70,7 @@ class SSenseP(SBaseP):
     score: float | None = None
     examples: list[SExamplesP] = None
     row_examples: list[SRowExamplesP] = None
+    row_examples_hidden_word: list[SRowExamplesP] = None
     images: list[SImageP] = None
 
     word: SWordForSenseP | None = None
