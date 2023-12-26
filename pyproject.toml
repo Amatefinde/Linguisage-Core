@@ -10,7 +10,6 @@ python = "^3.11"
 alembic = "^1.12.1"
 fastapi = {extras = ["all"], version = "^0.104.1"}
 asyncpg = "^0.29.0"
-black = "^23.10.1"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.23"}
 sqlalchemy-utils = "^0.41.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
