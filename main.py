@@ -35,6 +35,7 @@ origins = [
     "http://linguitest.ddns.net:80",
     "http://linguitest.ddns.net:7777",
     "http://lenya.papiros.volsk.cloudns.biz",
+    "https://lenya.papiros.volsk.cloudns.biz",
 ]
 
 headers = [
