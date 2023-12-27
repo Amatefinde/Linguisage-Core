@@ -1,7 +1,6 @@
 from typing import Annotated, TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import train_generator
 from core.database import db_helper
