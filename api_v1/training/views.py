@@ -1,5 +1,5 @@
 from typing import Annotated, TYPE_CHECKING
-
+import random
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import train_generator
@@ -26,6 +26,7 @@ async def get_training(
 ):
     await train_generator.define_mastered_senses(session, user)
     bunch_train_content: list[SSenseP] = await train_generator.generate(session, user, number)
+    random.shuffle(bunch_train_content)
     return bunch_train_content
 
 
