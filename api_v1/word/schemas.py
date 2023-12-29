@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from core.providers.Dictionary import SenseDTO
 from typing import Literal
@@ -39,4 +41,5 @@ class ImageDTO(BaseDTO):
 
 class SenseWithImagesDTO(BaseDTO):
     f_sense_id: int
+    created_at: datetime | None = None
     images: list[ImageDTO]

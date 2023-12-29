@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, field_validator, Field
@@ -73,5 +74,6 @@ class SSenseP(SBaseP):
     row_examples: list[SRowExamplesP] = None
     row_examples_hidden_word: list[SRowExamplesP] = None
     images: list[SImageP] = None
+    created_at: datetime | None = None
 
     word: SWordForSenseP | None = None
