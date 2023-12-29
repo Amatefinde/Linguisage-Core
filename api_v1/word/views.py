@@ -99,7 +99,7 @@ async def get_user_senses(
             session, sense.f_sense_id
         )
         sense.score = score_and_status.score
-        sense.status = score_and_status.score
+        sense.status = score_and_status.status
     return db_user_senses_with_images
 
 
