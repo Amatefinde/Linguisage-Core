@@ -53,6 +53,62 @@ async def create_user(
     return await crud.add_user(session=session, user=user)
 
 
+@router.post("/login")
+async def login_user(
+    request: Request,
+    response: Response,
+    user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_agent: Annotated[str | None, Header()] = None,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    user_data_from_db = await crud.get_user_by_email(email=user_data.username, session=session)
+    if not user_data_from_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with this email not found",
+        )
+    is_valid_password = verify_password(user_data.password, user_data_from_db.hash_password)
+    if not is_valid_password:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password")
+
+    refresh_token = create_token(user_data_from_db.id, "Refresh")
+    access_token = create_token(user_data_from_db.id, "Access")
+
+    user_session = SessionSchema(
+        user_id=user_data_from_db.id,
+        ip=request.client.host,
+        browser_header=user_agent,
+        token=refresh_token,
+    )
+
+    await crud.add_user_session(session=session, user_session=user_session)
+
+    response.set_cookie(
+        key="linguisage_refresh_token",
+        value=refresh_token,
+        httponly=True,
+    )
+    return {"access_token": access_token, "token_type": "Bearer"}
+
+
+@router.get("/log_out", status_code=status.HTTP_204_NO_CONTENT)
+async def login_user(
+    request: Request,
+    response: Response,
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_agent: Annotated[str | None, Header()] = None,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    session_db = await crud.find_user_session(session, current_user.id, request.client.host, user_agent)
+    await crud.delete_user_session(session=session, db_session=session_db)
+
+    response.set_cookie(
+        key="linguisage_refresh_token",
+        value="",
+        httponly=True,
+    )
+
+
 @router.get("/{user_id}", response_model=UserSchema)
 async def get_user(user: User = Depends(user_by_id)):
     return user
@@ -85,67 +141,3 @@ async def delete_user(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     return await crud.delete_user(session=session, user=user)
-
-
-@router.post("/login")
-async def login_user(
-    request: Request,
-    response: Response,
-    user_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    user_agent: Annotated[str | None, Header()] = None,
-    session: AsyncSession = Depends(db_helper.session_dependency),
-):
-    user_data_from_db = await crud.get_user_by_email(
-        email=user_data.username, session=session
-    )
-    if not user_data_from_db:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with this email not found",
-        )
-    is_valid_password = verify_password(
-        user_data.password, user_data_from_db.hash_password
-    )
-    if not is_valid_password:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid password"
-        )
-
-    refresh_token = create_token(user_data_from_db.id, "Refresh")
-    access_token = create_token(user_data_from_db.id, "Access")
-
-    user_session = SessionSchema(
-        user_id=user_data_from_db.id,
-        ip=request.client.host,
-        browser_header=user_agent,
-        token=refresh_token,
-    )
-
-    await crud.add_user_session(session=session, user_session=user_session)
-
-    response.set_cookie(
-        key="linguisage_refresh_token",
-        value=refresh_token,
-        httponly=True,
-    )
-    return {"access_token": access_token, "token_type": "Bearer"}
-
-
-@router.get("/log_out", status_code=status.HTTP_204_NO_CONTENT)
-async def login_user(
-    request: Request,
-    response: Response,
-    current_user: Annotated[User, Depends(get_current_user)],
-    user_agent: Annotated[str | None, Header()] = None,
-    session: AsyncSession = Depends(db_helper.session_dependency),
-):
-    session_db = await crud.find_user_session(
-        session, current_user.id, request.client.host, user_agent
-    )
-    await crud.delete_user_session(session=session, db_session=session_db)
-
-    response.set_cookie(
-        key="linguisage_refresh_token",
-        value="",
-        httponly=True,
-    )
