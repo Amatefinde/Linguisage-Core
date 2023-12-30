@@ -30,7 +30,6 @@ class DataBaseHelper:
     async def session_dependency(self) -> AsyncSession:
         session = self.get_scoped_session()
         yield session
-        print("сессия закрыта")
         await session.aclose()
 
 
