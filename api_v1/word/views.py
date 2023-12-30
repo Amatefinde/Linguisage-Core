@@ -1,3 +1,4 @@
+import time
 from typing import Annotated
 from api_v1.user import get_current_user
 from core.providers.Dictionary import get_word_by_query, WordDTO
@@ -10,7 +11,7 @@ from .schemas import SPairUserAndSense, SenseWithImagesDTO, SPairSenseAndImages
 from fastapi import Depends, APIRouter, HTTPException, status
 from api_v1 import train_logic
 from core.providers import neural_provider
-
+from loguru import logger
 
 router = APIRouter(prefix="/words", tags=["Words"])
 
@@ -59,47 +60,24 @@ async def add_meaning_to_user(
     return db_sense
 
 
-#
-#
-# @router.post(
-#     "/users/sense/image",
-#     summary="Pair image to user sense",
-#     status_code=status.HTTP_201_CREATED,
-# )
-# async def pair_image_to_user_meaning(
-#     image_id: int,
-#     user_meaning_id: int,
-#     current_user: Annotated[User, Depends(get_current_user)],
-#     session: AsyncSession = Depends(db_helper.session_dependency),
-# ):
-#     db_user_meaning = await crud.get_user_meaning_by_id(
-#         session=session, user_meaning_id=user_meaning_id
-#     )
-#     if db_user_meaning:
-#         db_image_meaning = await crud.pair_image_to_user_word_meaning(
-#             session=session, image_id=image_id, user_word_meaning=db_user_meaning
-#         )
-#         return db_image_meaning
-#     raise HTTPException(
-#         status_code=status.HTTP_404_NOT_FOUND, detail="User with this id not found"
-#     )
-#
-#
 @router.get("/users/senses", summary="Get list of user senses with images")
 async def get_user_senses(
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
+    start = time.time()
     db_user_senses_with_images = await crud.get_user_senses(
         session,
         current_user,
     )
+    logger.info(f"Request to dictionary: {time.time() - start}s")
+
+    start = time.time()
     for sense in db_user_senses_with_images:
-        score_and_status = await train_logic.get_score_and_status_by_f_sense_id(
-            session, sense.f_sense_id
-        )
+        score_and_status = await train_logic.get_score_and_status_by_f_sense_id(session, sense.f_sense_id)
         sense.score = score_and_status.score
         sense.status = score_and_status.status
+    logger.info(f"Calculate score: {time.time() - start}s")
     return db_user_senses_with_images
 
 
@@ -110,9 +88,7 @@ async def set_images_for_user_sense(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     try:
-        sense_db: Sense = await crud.get_user_sense_by_f_id_with_f_images_id(
-            session, sense.f_sense_id
-        )
+        sense_db: Sense = await crud.get_user_sense_by_f_id_with_f_images_id(session, sense.f_sense_id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
