@@ -43,3 +43,18 @@ async def get_senses_with_images(senses: list["SenseWithImagesDTO"]) -> list[SSe
     async with aiohttp.ClientSession() as session:
         tasks = [_get_sense_with_image(session, sense) for sense in senses]
         return await asyncio.gather(*tasks)
+
+
+async def get_senses_with_images_alt(senses: list["SenseWithImagesDTO"]) -> list[SSenseP]:
+    url = settings.DICTIONARY_MC_URL + f"/api/v1/words/get_senses_with_images_by_id"
+    body_params = {"senses": []}
+    senses_with_images_ready: list[SSenseP] = []
+    for sense in senses:
+        images_ids = [image.f_img_id for image in sense.images]
+        body_params["senses"].append({"sense_id": sense.f_sense_id, "images_ids": images_ids})
+    async with aiohttp.ClientSession() as session:
+        row_response = await session.post(url, json=body_params)
+        json_response = await row_response.json()
+    for sense in json_response:
+        senses_with_images_ready.append(SSenseP.model_validate(sense))
+    return senses_with_images_ready

@@ -49,13 +49,15 @@ async def _get_db_user_senses(session: AsyncSession, user: User):
 
 
 async def _get_senses_with_images_from_dictionary(senses_db):
-    senses_from_dictionary_tasks = []
+    senses_dto = []
     f_sense_created_at_maps = {}
     for sense in senses_db:
         sense_dto = SenseWithImagesDTO.model_validate(sense)
         f_sense_created_at_maps[sense_dto.f_sense_id] = sense_dto.created_at
-        senses_from_dictionary_tasks.append(dictionary_provider.get_sense_with_images(sense_dto))
-    ready_senses: list[dictionary_provider.SSenseP] = await asyncio.gather(*senses_from_dictionary_tasks)
+        senses_dto.append(sense_dto)
+    ready_senses: list[dictionary_provider.SSenseP] = await dictionary_provider.get_senses_with_images_alt(
+        senses_dto
+    )
     for ready_sense in ready_senses:
         ready_sense.created_at = f_sense_created_at_maps[ready_sense.f_sense_id]
     return ready_senses
