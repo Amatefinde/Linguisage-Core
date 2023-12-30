@@ -83,7 +83,7 @@ async def generate(session: AsyncSession, user: User, number: int) -> list[dicti
     sense_ready_for_send_to_dictionary = [
         SenseWithImagesDTO.model_validate(sense) for sense in senses_for_training
     ]
-    senses: list[dictionary_provider.SSenseP] = await dictionary_provider.get_senses_with_images(
+    senses: list[dictionary_provider.SSenseP] = await dictionary_provider.get_senses_with_images_alt(
         sense_ready_for_send_to_dictionary
     )
     return await _set_row_examples_hidden_word(senses)
