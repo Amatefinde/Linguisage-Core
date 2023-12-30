@@ -9,9 +9,7 @@ from typing import Sequence, Literal
 
 async def add_answer(session: AsyncSession, user: User, answer: SAnswer):
     db_sense: Sense = await get_user_sense_by_f_id(session, answer.f_sense_id)
-    session.add(
-        Answer(user_id=user.id, is_correct=answer.is_correct, sense_id=db_sense.id)
-    )
+    session.add(Answer(user_id=user.id, is_correct=answer.is_correct, sense_id=db_sense.id))
     await session.commit()
 
 
@@ -26,7 +24,6 @@ async def set_sense_status(
     f_sense_id: int,
     status: Literal["complete", "in_process", "in_queue"],
 ):
-    print("Поставили статус:", status)
     db_sense = await get_user_sense_by_f_id(session, f_sense_id)
     db_sense.status = status
     await session.commit()
