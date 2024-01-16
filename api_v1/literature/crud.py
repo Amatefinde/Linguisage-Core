@@ -4,10 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from core.config import settings
-from core.database.models import Literature
+from core.database.models import Literature, Sense
 from datetime import datetime
 import aiohttp
-from .schemas import LiteratureResponseScheme
+from .schemas import LiteratureResponseScheme, LiteratureStatsScheme
 
 
 async def get_literature_by_id(
@@ -41,16 +41,10 @@ async def get_all_user_literature(
     literature_db = await session.scalars(stmt)
     literatures = [LiteratureResponseScheme.model_validate(x) for x in literature_db]
     async with aiohttp.ClientSession() as session:
-        tasks = [
-            get_literature_cover(session, instance.f_literature_id)
-            for instance in literatures
-        ]
+        tasks = [get_literature_cover(session, instance.f_literature_id) for instance in literatures]
 
         books = await asyncio.gather(*tasks)
-        covers = [
-            (x[0]["img"] if len(x) else None) if type(x) is list else None
-            for x in books
-        ]
+        covers = [(x[0]["img"] if len(x) else None) if type(x) is list else None for x in books]
 
     for idx, literature in enumerate(literatures):
         literature.cover = covers[idx]
@@ -85,7 +79,7 @@ async def delete_literature(
     await session.commit()
 
 
-async def get_last_opened(session: AsyncSession, user_id: int):
+async def get_last_opened(session: AsyncSession, user_id: int) -> Literature:
     stmt = (
         select(Literature)
         .where(Literature.user_id == user_id)
@@ -93,3 +87,14 @@ async def get_last_opened(session: AsyncSession, user_id: int):
     )
     result = await session.scalar(stmt)
     return result
+
+
+async def get_stats_for_literature(session: AsyncSession, literature_id: int):
+    stmt = select(Sense).where(Sense.literature_id == literature_id)
+    db_senses = await session.scalars(stmt)
+    stats = LiteratureStatsScheme(literature_id=literature_id)
+    for db_sense in db_senses:
+        current_value = getattr(stats, db_sense.status)
+        setattr(stats, db_sense.status, current_value + 1)
+        stats.total += 1
+    return stats

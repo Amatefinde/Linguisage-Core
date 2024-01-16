@@ -12,3 +12,11 @@ class LiteratureResponseScheme(BaseModel):
     f_literature_id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LiteratureStatsScheme(BaseModel):
+    literature_id: int
+    complete: int = 0
+    in_queue: int = 0
+    in_process: int = 0
+    total: int = 0

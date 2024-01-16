@@ -31,11 +31,10 @@ async def get_last_opened_literature(
 ):
     db_literature = await crud.get_last_opened(session, current_user.id)
     if db_literature:
-        literature_pages = await content_provider.get_literature_pages(
-            db_literature.f_literature_id, 1, 1
-        )
+        literature_pages = await content_provider.get_literature_pages(db_literature.f_literature_id, 1, 1)
         setattr(db_literature, "cover", literature_pages[0]["img"])
-        return db_literature
+        stats = await crud.get_stats_for_literature(session, db_literature.id)
+        return {"literature": db_literature, "stats": stats}
     return None
 
 
