@@ -49,6 +49,8 @@ async def get_senses_with_images_alt(senses: list["SenseWithImagesDTO"]) -> list
     url = settings.DICTIONARY_MC_URL + f"/api/v1/words/get_senses_with_images_by_id"
     body_params = {"senses": []}
     senses_with_images_ready: list[SSenseP] = []
+    if not senses:
+        return senses_with_images_ready
     for sense in senses:
         images_ids = [image.f_img_id for image in sense.images]
         body_params["senses"].append({"sense_id": sense.f_sense_id, "images_ids": images_ids})
