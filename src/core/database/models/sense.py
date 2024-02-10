@@ -23,14 +23,24 @@ class Sense(Base):
 
     literature: Mapped["Literature"] = relationship(back_populates="senses")
     user: Mapped["User"] = relationship(back_populates="senses")
-    images: Mapped[list["Image"]] = relationship(
-        back_populates="senses", cascade="all, delete-orphan"
+    word_images: Mapped[list["WordImage"]] = relationship(
+        back_populates="sense", cascade="all, delete-orphan"
+    )
+    sense_images: Mapped[list["SenseImage"]] = relationship(
+        back_populates="sense", cascade="all, delete-orphan"
     )
     answers: Mapped[list["Answer"]] = relationship(back_populates="sense")
 
 
-class Image(Base):
+class WordImage(Base):
     f_img_id: Mapped[int]
 
     sense_id: Mapped["Sense"] = mapped_column(ForeignKey("sense.id"))
-    senses: Mapped["Sense"] = relationship(back_populates="images")
+    sense: Mapped["Sense"] = relationship(back_populates="word_images")
+
+
+class SenseImage(Base):
+    f_img_id: Mapped[int]
+
+    sense_id: Mapped["Sense"] = mapped_column(ForeignKey("sense.id"))
+    sense: Mapped["Sense"] = relationship(back_populates="sense_images")

@@ -1,62 +1,60 @@
-import asyncio
+from pprint import pprint
 
-from aiohttp import ClientSession
+from fastapi import HTTPException
+from httpx import AsyncClient
+from urllib.parse import urljoin
 
-from src.core.config import settings
-from .schemas import WordDTO, SSenseP
+from loguru import logger
 
-import aiohttp
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    pass
-
-
-async def get_word_by_query(query: str, download_if_not_found=True) -> WordDTO | None:
-    url = settings.DICTIONARY_MC_URL + "/api/v1/words/alias"
-    params = {
-        "alias": query,
-        "download_if_not_found": str(download_if_not_found).lower(),
-    }
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params) as response:
-            if response.status == 200:
-                word = WordDTO.model_validate(await response.json())
-                return word
+from src.core import settings
+from .schemas.entity import SenseEntities
+from .schemas.general import (
+    DictionaryWordInfo,
+    SRequestAddPersonalizeSense,
+    PersonalizeSenseEntity,
+)
+from .schemas.get_senses import SGetSense
 
 
-async def _get_sense_with_image(session: ClientSession, sense: "SenseWithImagesDTO"):
-    url = settings.DICTIONARY_MC_URL + f"/api/v1/words/sense/{sense.f_sense_id}"
-    params = {"images_id": [img.f_img_id for img in sense.images]}
-
-    async with session.get(url, params=params) as response:
-        if response.status == 200:
-            return SSenseP.model_validate(await response.json())
-
-
-async def get_sense_with_images(sense: "SenseWithImagesDTO") -> SSenseP:
-    async with aiohttp.ClientSession() as session:
-        return await _get_sense_with_image(session, sense)
-
-
-async def get_senses_with_images(senses: list["SenseWithImagesDTO"]) -> list[SSenseP]:
-    async with aiohttp.ClientSession() as session:
-        tasks = [_get_sense_with_image(session, sense) for sense in senses]
-        return await asyncio.gather(*tasks)
+async def search(query: str) -> DictionaryWordInfo:
+    async with AsyncClient() as httpx_client:
+        url = urljoin(settings.ms.DICTIONARY_MS_URL, "/api/v1/public/query")
+        response = await httpx_client.get(url, params={"query": query})
+        if response.status_code == 404:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Sorry, we don't have info about {query!r}, "
+                f"but if this word exists, we already try to search info about it. "
+                f"You may try again after several tens of seconds",
+            )
+        elif response.status_code == 200:
+            return DictionaryWordInfo.model_validate(response.json())
+        raise HTTPException(detail=response.text, status_code=response.status_code)
 
 
-async def get_senses_with_images_alt(senses: list["SenseWithImagesDTO"]) -> list[SSenseP]:
-    url = settings.DICTIONARY_MC_URL + f"/api/v1/words/get_senses_with_images_by_id"
-    body_params = {"senses": []}
-    senses_with_images_ready: list[SSenseP] = []
-    if not senses:
-        return senses_with_images_ready
-    for sense in senses:
-        images_ids = [image.f_img_id for image in sense.images]
-        body_params["senses"].append({"sense_id": sense.f_sense_id, "images_ids": images_ids})
-    async with aiohttp.ClientSession() as session:
-        row_response = await session.post(url, json=body_params)
-        json_response = await row_response.json()
-    for sense in json_response:
-        senses_with_images_ready.append(SSenseP.model_validate(sense))
-    return senses_with_images_ready
+async def add_personalize_sense(
+    add_scheme: SRequestAddPersonalizeSense,
+) -> PersonalizeSenseEntity:
+    async with AsyncClient() as httpx_client:
+        url = urljoin(settings.ms.DICTIONARY_MS_URL, "/api/v1/personalize")
+        response = await httpx_client.post(url, json=add_scheme.model_dump())
+        if response.status_code == 201:
+            return PersonalizeSenseEntity.model_validate(response.json(), from_attributes=True)
+
+        logger.error(f"status: {response.status_code}. {response.text}")
+        raise HTTPException(detail=response.text, status_code=response.status_code)
+
+
+async def get_senses(
+    get_senses_scheme: list[SGetSense],
+) -> SenseEntities:
+    async with AsyncClient() as httpx_client:
+        senses = {"senses": [x.model_dump() for x in get_senses_scheme]}
+        pprint(senses)
+        url = urljoin(settings.ms.DICTIONARY_MS_URL, "/api/v1/general/get_senses")
+        response = await httpx_client.post(url, json=senses)
+        if response.status_code == 200:
+            return SenseEntities.model_validate(response.json(), from_attributes=True)
+
+        logger.error(f"status: {response.status_code}. {response.text}")
+        raise HTTPException(detail=response.text, status_code=response.status_code)

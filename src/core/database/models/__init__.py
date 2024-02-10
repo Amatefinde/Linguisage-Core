@@ -3,12 +3,13 @@ __all__ = [
     "db_user_dependency",
     "Literature",
     "Sense",
-    "Image",
+    "SenseImage",
+    "WordImage",
     "Answer",
 ]
 
 from .user import User, db_user_dependency
 
 from .literature import Literature
-from .sense import Sense, Image
+from .sense import Sense, SenseImage, WordImage
 from .training import Answer
