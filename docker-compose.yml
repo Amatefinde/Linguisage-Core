@@ -1,0 +1,28 @@
+version: '3.7'
+services:
+  app:
+    environment:
+      - DB_HOST=postgres_db
+      - REDIS_HOST=redis
+    build:
+      context: .
+    container_name: 'dictionary_ms'
+    depends_on:
+      - postgres_db
+    ports:
+      - "9300:9300"
+    volumes:
+      - ${VOLUME_STATIC}:/linguisage/static
+
+
+  postgres_db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    ports:
+      - "9302:5432"
+    volumes:
+      - ${VOLUME_POSTGRES}:/var/lib/postgresql/data
+

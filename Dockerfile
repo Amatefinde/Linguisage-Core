@@ -1,14 +1,34 @@
 FROM python:3.11
+LABEL authors="Amatefinde"
+
+ARG YOUR_ENV
+
+ENV YOUR_ENV=${YOUR_ENV} \
+  PYTHONFAULTHANDLER=1 \
+  PYTHONUNBUFFERED=1 \
+  PYTHONHASHSEED=random \
+  PIP_NO_CACHE_DIR=off \
+  PIP_DISABLE_PIP_VERSION_CHECK=on \
+  PIP_DEFAULT_TIMEOUT=100 \
+
+  # Poetry's configuration:
+  POETRY_NO_INTERACTION=1 \
+  POETRY_VIRTUALENVS_CREATE=false \
+  POETRY_CACHE_DIR='/var/cache/pypoetry' \
+  POETRY_HOME='/usr/local' \
+  POETRY_VERSION=1.7.1
 
 
-RUN mkdir /linguibase
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
-WORKDIR /linguibase
+WORKDIR /linguisage
+COPY poetry.lock pyproject.toml /linguisage/
 
-COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN poetry install
 
 COPY . .
 
-CMD ["gunicorn", "main:app", "--workers", "1", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:666"]
+RUN chmod +x app_entry_point.sh
+
+CMD ["/linguisage/app_entry_point.sh"]
