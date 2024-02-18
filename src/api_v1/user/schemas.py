@@ -2,15 +2,17 @@ import uuid
 from datetime import datetime
 
 from fastapi_users import schemas
+from pydantic import Field, EmailStr
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
-    pass
+    last_verification_request: datetime | None = None
 
 
-class UserCreate(schemas.BaseUserCreate):
+class UserCreate(schemas.CreateUpdateDictModel):
     username: str
-    last_verification_request: datetime
+    email: EmailStr
+    password: str
 
 
 class UserUpdate(schemas.BaseUserUpdate):
