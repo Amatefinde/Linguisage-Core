@@ -1,7 +1,7 @@
 from pprint import pprint
 from typing import Annotated, Iterable
 
-from fastapi import APIRouter, Depends, UploadFile, Form, status
+from fastapi import APIRouter, Depends, UploadFile, Form, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api_v1.user.user_manager import current_active_user_dependency
@@ -65,3 +65,13 @@ async def add_literature(
     epub_entity = await literature_provider.patch_book(db_literature.f_literature_id, patch)
     epub_entity.id = db_literature.id
     return epub_entity
+
+
+@router.get("/last", response_model=LiteratureEpubEntity)
+async def get_last_opened_literature(
+    current_user: User = Depends(current_active_user_dependency),
+    db_session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    if db_literature := await crud.get_last_user_literature(db_session, user=current_user):
+        return await literature_provider.get_one_book(db_literature.f_literature_id)
+    raise HTTPException(status_code=404, detail=f"User have not yet literature")
