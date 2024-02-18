@@ -46,5 +46,11 @@ async def patch_literature(
     await session.commit()
 
 
-async def get_last_user_literature(session: AsyncSession, user: User):
-    pass
+async def get_last_user_literature(session: AsyncSession, user: User) -> Literature | None:
+    stmt = (
+        select(Literature)
+        .where(Literature.user == user)
+        .order_by(Literature.last_open_datetime, Literature.add_datetime)
+        .limit(1)
+    )
+    return await session.scalar(stmt)
