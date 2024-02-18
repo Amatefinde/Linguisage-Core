@@ -6,9 +6,11 @@ __all__ = [
     "SenseImage",
     "WordImage",
     "Answer",
+    "db_access_token_dependency",
+    "AccessToken",
 ]
 
-from .user import User, db_user_dependency
+from .user import User, db_user_dependency, db_access_token_dependency, AccessToken
 
 from .literature import Literature
 from .sense import Sense, SenseImage, WordImage
