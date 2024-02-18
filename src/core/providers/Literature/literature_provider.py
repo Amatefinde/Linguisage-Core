@@ -31,6 +31,16 @@ async def get_many_book(f_literature_ids: Sequence[int]) -> ManyLiteratureEpubEn
         return books
 
 
+async def get_one_book(f_literature_id: int) -> LiteratureEpubEntity:
+    async with httpx.AsyncClient() as httpx_client:
+        url = urljoin(settings.ms.LITERATURE_MS_URL, f"api/v1/books/{f_literature_id}")
+        response = await httpx_client.get(url)
+        if response.status_code != 200:
+            logger.error(response.json())
+        book = LiteratureEpubEntity.model_validate(response.json(), from_attributes=True)
+        return book
+
+
 async def delete_book(f_literature_id: int) -> None:
     async with httpx.AsyncClient() as httpx_client:
         url = urljoin(settings.ms.LITERATURE_MS_URL, f"api/v1/books/{f_literature_id}")
