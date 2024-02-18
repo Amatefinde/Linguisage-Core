@@ -36,4 +36,4 @@ def sand_confirm_email(email: str, confirm_url: str):
 
 
 if __name__ == "__main__":
-    sand_confirm_email("beiov2004.mail@gmail.com", "https://leetcode.com")
+    sand_confirm_email("irespectonlyyen@gmail.com", "https://leetcode.com")
