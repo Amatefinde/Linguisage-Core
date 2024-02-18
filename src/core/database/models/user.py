@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import String, TIMESTAMP, Integer, DATE, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 from datetime import date, datetime
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy.testing.pickleable import User
@@ -39,14 +39,24 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     answers: Mapped[list["Answer"]] = relationship(back_populates="user")
 
 
-class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
-    pass
+class AccessToken(
+    SQLAlchemyBaseAccessTokenTableUUID,
+    Base,
+):
+    # token: Mapped[str] = mapped_column(String(length=43), primary_key=False)
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
 
 
 async def db_user_dependency(
     session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     yield SQLAlchemyUserDatabase(session, User)
+
+
+async def db_access_token_dependency(
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    yield SQLAlchemyAccessTokenDatabase(session, AccessToken)
 
 
 # class User(Base):
@@ -70,9 +80,3 @@ async def db_user_dependency(
 #
 #     senses: Mapped[list["Sense"]] = relationship(back_populates="user")
 #     answers: Mapped[list["Answer"]] = relationship(back_populates="user")
-
-
-async def db_access_token_dependency(
-    session: AsyncSession = Depends(db_helper.session_dependency),
-):
-    yield SQLAlchemyAccessTokenDatabase(session, AccessToken)
