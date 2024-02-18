@@ -12,6 +12,7 @@ from fastapi_users.authentication.strategy.db import (
 )
 
 from fastapi_users.db import SQLAlchemyUserDatabase
+from loguru import logger
 
 from src.core import settings
 from src.core.database.models import (
@@ -27,12 +28,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     verification_token_secret = settings.auth.VERIFICATION_TOKEN_SECRET
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        pass
+        logger.info(await self.request_verify(user))
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ):
-        print(f"User {user.id} has forgot their password. Reset token: {token}")
+        pass
 
     async def on_after_request_verify(
         self,
@@ -54,11 +55,9 @@ bearer_transport = BearerTransport(tokenUrl=f"{settings.api_v1_prefix}/auth/logi
 
 
 def get_database_strategy(
-    access_token_db: AccessTokenDatabase[AccessToken] = Depends(
-        db_access_token_dependency
-    ),
+    access_token_db: AccessTokenDatabase[AccessToken] = Depends(db_access_token_dependency),
 ) -> DatabaseStrategy:
-    return DatabaseStrategy(access_token_db, lifetime_seconds=3600)
+    return DatabaseStrategy(access_token_db, lifetime_seconds=60 * 60 * 24 * 7)
 
 
 auth_backend = AuthenticationBackend(
@@ -69,4 +68,4 @@ auth_backend = AuthenticationBackend(
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
-current_active_user_dependency = fastapi_users.current_user(active=True)
+current_active_user_dependency = fastapi_users.current_user(active=True, verified=True)
