@@ -1,18 +1,19 @@
-"""initial commit
+"""fix token field
 
-Revision ID: 3e9dcaca5861
+Revision ID: dd389a85664b
 Revises: 
-Create Date: 2024-02-17 10:40:36.861375
+Create Date: 2024-02-18 12:40:00.317009
 
 """
 from typing import Sequence, Union
+
 import fastapi_users_db_sqlalchemy
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "3e9dcaca5861"
+revision: str = "dd389a85664b"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -46,6 +47,25 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
     op.create_table(
+        "accesstoken",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+        sa.Column("token", sa.String(length=43), nullable=False),
+        sa.Column(
+            "created_at",
+            fastapi_users_db_sqlalchemy.generics.TIMESTAMPAware(timezone=True),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(["user_id"], ["user.id"], ondelete="cascade"),
+        sa.PrimaryKeyConstraint("id", "token"),
+    )
+    op.create_index(
+        op.f("ix_accesstoken_created_at"),
+        "accesstoken",
+        ["created_at"],
+        unique=False,
+    )
+    op.create_table(
         "literature",
         sa.Column("title", sa.String(), nullable=False),
         sa.Column("f_literature_id", sa.Integer(), nullable=False),
@@ -56,9 +76,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("last_open_datetime", sa.TIMESTAMP(), nullable=True),
-        sa.Column(
-            "user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False
-        ),
+        sa.Column("user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["user_id"],
@@ -82,9 +100,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("literature_id", sa.Integer(), nullable=True),
-        sa.Column(
-            "user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False
-        ),
+        sa.Column("user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["literature_id"],
@@ -106,9 +122,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("sense_id", sa.Integer(), nullable=False),
-        sa.Column(
-            "user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False
-        ),
+        sa.Column("user_id", fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["sense_id"],
@@ -152,6 +166,8 @@ def downgrade() -> None:
     op.drop_table("answer")
     op.drop_table("sense")
     op.drop_table("literature")
+    op.drop_index(op.f("ix_accesstoken_created_at"), table_name="accesstoken")
+    op.drop_table("accesstoken")
     op.drop_index(op.f("ix_user_email"), table_name="user")
     op.drop_table("user")
     # ### end Alembic commands ###
