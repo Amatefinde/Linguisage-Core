@@ -44,7 +44,7 @@ async def add_public_sense_to_user(
 
 
 @router.patch("/personalize", status_code=status.HTTP_201_CREATED)
-async def add_public_sense_to_user(
+async def add_personalize_sense_to_user(
     add_scheme: SRequestAddPersonalizeSense,
     user: User = Depends(current_active_user_dependency),
     db_session: AsyncSession = Depends(db_helper.session_dependency),
