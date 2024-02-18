@@ -8,7 +8,10 @@ from sqlalchemy.testing.pickleable import User
 from fastapi import Depends
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from fastapi_users_db_sqlalchemy.access_token import (
+    SQLAlchemyAccessTokenDatabase,
+    SQLAlchemyBaseAccessTokenTableUUID,
+)
 from src.core.database import db_helper
 from src.core.database.base import Base
 from src.core import types
@@ -19,7 +22,9 @@ if TYPE_CHECKING:
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     username: Mapped[str]
-    last_verification_request: Mapped[datetime | None]
+    last_verification_request: Mapped[datetime | None] = mapped_column(
+        default=None, server_default=None
+    )
     created_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, server_default=func.now()
     )
@@ -32,6 +37,10 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     )
     senses: Mapped[list["Sense"]] = relationship(back_populates="user")
     answers: Mapped[list["Answer"]] = relationship(back_populates="user")
+
+
+class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
+    pass
 
 
 async def db_user_dependency(
@@ -61,3 +70,9 @@ async def db_user_dependency(
 #
 #     senses: Mapped[list["Sense"]] = relationship(back_populates="user")
 #     answers: Mapped[list["Answer"]] = relationship(back_populates="user")
+
+
+async def db_access_token_dependency(
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    yield SQLAlchemyAccessTokenDatabase(session, AccessToken)
