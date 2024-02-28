@@ -31,4 +31,4 @@ COPY . .
 
 RUN chmod +x "/linguisage/app_entry_point.sh"
 
-CMD ["/linguisage/app_entry_point.sh"]
+CMD ["sh", "/linguisage/app_entry_point.sh"]
