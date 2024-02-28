@@ -42,8 +42,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         token: str,
         request: Optional[Request] = None,
     ):
-        sand_confirm_email(user.email, f"{settings.protocol}://linguisage/auth?token={token}")
-        print(f"sent to: {settings.protocol}://linguisage/auth?token={token}")
+        sand_confirm_email(user.email, token)
 
 
 async def get_user_manager(
