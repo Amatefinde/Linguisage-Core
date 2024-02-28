@@ -33,6 +33,7 @@ class Email(BaseSettings):
 
 class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
+    protocol: str
 
     auth: Auth = Auth()
     db: DataBaseSettings = DataBaseSettings()
