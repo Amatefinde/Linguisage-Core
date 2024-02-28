@@ -30,9 +30,11 @@ class EmailSender:
         self.server.quit()
 
 
-def sand_confirm_email(email: str, confirm_url: str):
+def sand_confirm_email(email: str, token: str):
+    confirm_url = f"{settings.protocol}://linguisage.ru/auth?token={token}"
     sender = EmailSender()
     sender.send_email_confirm(email, confirm_url)
+    logger.info(f"Email: email, Token: {confirm_url}")
 
 
 if __name__ == "__main__":
