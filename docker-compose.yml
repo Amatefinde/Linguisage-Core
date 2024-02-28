@@ -3,7 +3,6 @@ services:
   app:
     environment:
       - DB_HOST=postgres_db
-      - REDIS_HOST=redis
     build:
       context: .
     container_name: 'core_ms'
@@ -17,7 +16,6 @@ services:
 
   postgres_db:
     image: postgres:15
-    container_name: 'core_db'
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
