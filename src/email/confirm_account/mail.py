@@ -4,7 +4,7 @@ from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from loguru import logger
-from html_builder import build_email_confirm_html
+from .html_builder import build_email_confirm_html
 from src.core import settings
 
 
