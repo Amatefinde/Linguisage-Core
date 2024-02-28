@@ -21,6 +21,7 @@ from src.core.database.models import (
     AccessToken,
     db_access_token_dependency,
 )
+from src.email.confirm_account.mail import sand_confirm_email
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
@@ -41,8 +42,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         token: str,
         request: Optional[Request] = None,
     ):
-        print(f"User active: {user.is_active}")
-        print(token)
+        sand_confirm_email(user.email, f"{settings.protocol}://linguisage/auth?token={token}")
+        print(f"sent to: {settings.protocol}://linguisage/auth?token={token}")
 
 
 async def get_user_manager(
