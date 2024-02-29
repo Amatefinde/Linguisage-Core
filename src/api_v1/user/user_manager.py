@@ -1,6 +1,8 @@
 import uuid
+from datetime import datetime
+from smtplib import SMTPRecipientsRefused
 from typing import Optional
-from fastapi import Depends, Request, BackgroundTasks
+from fastapi import Depends, Request, BackgroundTasks, HTTPException, status
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
@@ -44,10 +46,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         user: User,
         token: str,
         request: Optional[Request] = None,
-        db_session: AsyncSession = Depends(db_helper.session_dependency),
     ):
-        send_confirm_email(user.email, token)
-        await crud.set_last_verification_date_by_now(db_session, user)
+        try:
+            send_confirm_email(user.email, token)
+            user.last_verification_request = datetime.now()
+        except SMTPRecipientsRefused:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported email address"
+            )
 
 
 async def get_user_manager(
