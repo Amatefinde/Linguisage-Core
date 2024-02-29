@@ -80,3 +80,4 @@ auth_backend = AuthenticationBackend(
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
 current_active_user_dependency = fastapi_users.current_user(active=True, verified=True)
+current_active_not_verified_user_dependency = fastapi_users.current_user(active=True, verified=False)
