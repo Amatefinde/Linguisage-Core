@@ -52,7 +52,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             user.last_verification_request = datetime.now()
         except SMTPRecipientsRefused:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported email address"
+                status_code=status.HTTP_400_BAD_REQUEST, detail="UNSUPPORTED_EMAIL_ADDRESS"
             )
 
 
@@ -80,4 +80,6 @@ auth_backend = AuthenticationBackend(
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
 current_active_user_dependency = fastapi_users.current_user(active=True, verified=True)
-current_active_not_verified_user_dependency = fastapi_users.current_user(active=True, verified=False)
+current_active_not_verified_user_dependency = fastapi_users.current_user(
+    active=True, verified=False
+)
