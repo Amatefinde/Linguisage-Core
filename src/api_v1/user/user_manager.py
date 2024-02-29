@@ -10,7 +10,9 @@ from fastapi_users.authentication.strategy.db import (
     AccessTokenDatabase,
     DatabaseStrategy,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from . import crud
 from fastapi_users.db import SQLAlchemyUserDatabase
 from loguru import logger
 
@@ -21,7 +23,8 @@ from src.core.database.models import (
     AccessToken,
     db_access_token_dependency,
 )
-from src.email.confirm_account.mail import sand_confirm_email
+from src.email.confirm_account.mail import send_confirm_email
+from ...core.database import db_helper
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
@@ -29,7 +32,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     verification_token_secret = settings.auth.VERIFICATION_TOKEN_SECRET
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        logger.info(await self.request_verify(user))
+        await self.request_verify(user)
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
@@ -41,8 +44,10 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         user: User,
         token: str,
         request: Optional[Request] = None,
+        db_session: AsyncSession = Depends(db_helper.session_dependency),
     ):
-        sand_confirm_email(user.email, token)
+        send_confirm_email(user.email, token)
+        await crud.set_last_verification_date_by_now(db_session, user)
 
 
 async def get_user_manager(
