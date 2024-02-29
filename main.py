@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database.models import User, db_user_dependency
 from src.api_v1 import router as api_v1_router
@@ -9,6 +10,19 @@ from src.api_v1.user.user_manager import (
 
 app = FastAPI(title="Linguisage Core")
 app.include_router(api_v1_router)
+
+origins = [
+    "http://localhost:5173",
+    "http://linguisage.ru",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # @app.on_event("startup")
