@@ -30,7 +30,7 @@ class EmailSender:
         self.server.quit()
 
 
-def sand_confirm_email(email: str, token: str):
+def send_confirm_email(email: str, token: str):
     confirm_url = f"{settings.protocol}://linguisage.ru/auth?token={token}"
     sender = EmailSender()
     sender.send_email_confirm(email, confirm_url)
@@ -38,4 +38,4 @@ def sand_confirm_email(email: str, token: str):
 
 
 if __name__ == "__main__":
-    sand_confirm_email("irespectonlyyen@gmail.com", "https://leetcode.com")
+    send_confirm_email("irespectonlyyen@gmail.com", "https://leetcode.com")
