@@ -47,9 +47,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         token: str,
         request: Optional[Request] = None,
     ):
+        if (
+            user.last_verification_request
+            and (datetime.utcnow() - user.last_verification_request).total_seconds() < 50
+        ):
+            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS)
         try:
             send_confirm_email(user.email, token)
-            user.last_verification_request = datetime.now()
+            await crud.set_user_last_verified_by_now(user)
         except SMTPRecipientsRefused:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="UNSUPPORTED_EMAIL_ADDRESS"
