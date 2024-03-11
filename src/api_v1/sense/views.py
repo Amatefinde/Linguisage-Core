@@ -34,7 +34,7 @@ async def search(query: str):
     return await dictionary_provider.search(query)
 
 
-@router.patch("/public", status_code=status.HTTP_201_CREATED)
+@router.post("/public", status_code=status.HTTP_201_CREATED)
 async def add_public_sense_to_user(
     add_scheme: SAddSenseRequest,
     user: User = Depends(current_active_user_dependency),
@@ -43,7 +43,7 @@ async def add_public_sense_to_user(
     return await crud.add_public_sense_to_user(db_session, user, add_scheme)
 
 
-@router.patch("/personalize", status_code=status.HTTP_201_CREATED)
+@router.post("/personalize", status_code=status.HTTP_201_CREATED)
 async def add_personalize_sense_to_user(
     add_scheme: SRequestAddPersonalizeSense,
     user: User = Depends(current_active_user_dependency),
