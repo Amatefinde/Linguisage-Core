@@ -1,13 +1,27 @@
 from types import NoneType
+from typing import Sequence
 
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from .scheme.request import SAddSenseRequest
 from src.core.database.models import User, SenseImage, Sense, WordImage
-from src.core.providers.Dictionary.schemas.general import PersonalizeSenseEntity
+from src.core.providers.Dictionary.schemas.general import (
+    PersonalizeSenseEntity,
+    DictionaryWordInfo,
+)
 from ...core.providers.Dictionary.schemas.get_senses import SGetSense
+
+
+async def check_is_user_have_sense_by_f_sense_id(
+    session: AsyncSession, user: User, f_sense_id: int
+) -> bool:
+    stmt = select(Sense).where(Sense.f_sense_id == f_sense_id).where(Sense.user == user)
+    row_response = await session.execute(stmt)
+    # logger.debug(row_response.scalar())
+    return bool(row_response.scalar_one_or_none())
 
 
 async def add_public_sense_to_user(
@@ -75,3 +89,26 @@ async def get_senses(
 
     row_response = (await session.scalars(stmt)).all()
     return [SGetSense.model_validate(x, from_attributes=True) for x in row_response]
+
+
+def __mark_already_added_senses(
+    dictionary_word_info: DictionaryWordInfo, added_senses: Sequence[Sense]
+):
+    for already_added_sense in added_senses:
+        for word_sense in dictionary_word_info.senses:
+            if word_sense.f_sense_id == already_added_sense.f_sense_id:
+                setattr(word_sense, "in_user_dictionary", True)
+
+
+async def mark_senses_that_user_already_have(
+    session: AsyncSession,
+    user: User,
+    dictionary_word_info: DictionaryWordInfo,
+) -> None:
+    f_sense_ids_for_word: list[int] = [sense.f_sense_id for sense in dictionary_word_info.senses]
+    stmt = (
+        select(Sense).where(Sense.user == user).where(Sense.f_sense_id.in_(f_sense_ids_for_word))
+    )
+    row_response = await session.execute(stmt)
+    already_added_senses = row_response.scalars().all()
+    __mark_already_added_senses(dictionary_word_info, already_added_senses)

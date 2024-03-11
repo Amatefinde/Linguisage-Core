@@ -50,7 +50,6 @@ async def get_senses(
 ) -> SenseEntities:
     async with AsyncClient() as httpx_client:
         senses = {"senses": [x.model_dump() for x in get_senses_scheme]}
-        pprint(senses)
         url = urljoin(settings.ms.DICTIONARY_MS_URL, "/api/v1/general/get_senses")
         response = await httpx_client.post(url, json=senses)
         if response.status_code == 200:

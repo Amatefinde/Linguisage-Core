@@ -22,6 +22,7 @@ class Sense(BaseModel):
     lvl: types.sense_lvl | None = None
     short_cut: str | None = None
     examples: list[Example]
+    in_user_dictionary: bool = False
 
 
 class DictionaryWordInfo(BaseModel):

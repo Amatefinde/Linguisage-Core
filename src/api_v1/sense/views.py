@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .scheme.request import SAddSenseRequest
@@ -23,6 +24,7 @@ async def get_user_senses(
 ):
     db_senses: list[SGetSense] = await crud.get_senses(session, user)
     f_sense_id_and_sense_id_map = {x.sense_id: x.id for x in db_senses}
+    logger.debug(db_senses)
     sense_entities = await dictionary_provider.get_senses(db_senses)
     for sense in sense_entities.senses:
         sense.id = f_sense_id_and_sense_id_map[sense.id]
@@ -30,8 +32,14 @@ async def get_user_senses(
 
 
 @router.get("/search", response_model=DictionaryWordInfo)
-async def search(query: str):
-    return await dictionary_provider.search(query)
+async def search(
+    query: str,
+    session: AsyncSession = Depends(db_helper.session_dependency),
+    user: User = Depends(current_active_user_dependency),
+):
+    dictionary_word_info = await dictionary_provider.search(query)
+    await crud.mark_senses_that_user_already_have(session, user, dictionary_word_info)
+    return dictionary_word_info
 
 
 @router.post("/public", status_code=status.HTTP_201_CREATED)
@@ -40,6 +48,8 @@ async def add_public_sense_to_user(
     user: User = Depends(current_active_user_dependency),
     db_session: AsyncSession = Depends(db_helper.session_dependency),
 ):
+    if await crud.check_is_user_have_sense_by_f_sense_id(db_session, user, add_scheme.f_sense_id):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already has sense")
     return await crud.add_public_sense_to_user(db_session, user, add_scheme)
 
 
@@ -60,4 +70,5 @@ async def add_personalize_sense_to_user(
 
 @router.delete("/{sense_id}")
 async def delete_sense():
+    """TODO"""
     pass
