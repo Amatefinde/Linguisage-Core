@@ -10,9 +10,10 @@ from src.core.providers.Dictionary.schemas.general import (
 )
 from src.api_v1.user.user_manager import current_active_user_dependency
 from src.core.database import db_helper
-from src.core.database.models import User
+from src.core.database.models import User, Sense
 from . import crud
-from ...core.providers.Dictionary.schemas.get_senses import SGetSense
+from src.core.providers.Dictionary.schemas.get_senses import SGetSense
+from .dependencies import sense_dependency
 
 router = APIRouter(prefix="/senses", tags=["Senses"])
 
@@ -24,7 +25,6 @@ async def get_user_senses(
 ):
     db_senses: list[SGetSense] = await crud.get_senses(session, user)
     f_sense_id_and_sense_id_map = {x.sense_id: x.id for x in db_senses}
-    logger.debug(db_senses)
     sense_entities = await dictionary_provider.get_senses(db_senses)
     for sense in sense_entities.senses:
         sense.id = f_sense_id_and_sense_id_map[sense.id]
@@ -68,7 +68,10 @@ async def add_personalize_sense_to_user(
     )
 
 
-@router.delete("/{sense_id}")
-async def delete_sense():
-    """TODO"""
-    pass
+@router.delete("/{sense_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_sense(
+    db_sense: Sense = Depends(sense_dependency),
+    db_session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    await db_session.delete(db_sense)
+    await db_session.commit()
