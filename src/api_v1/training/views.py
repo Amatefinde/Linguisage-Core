@@ -14,17 +14,17 @@ router = APIRouter(tags=["Training"], prefix="/training")
 
 @router.get("")
 async def get_training(
-    exersice_number: int = 10,
+    exercise_number: int = 10,
     db_session: AsyncSession = Depends(db_helper.session_dependency),
     user: User = Depends(current_active_user_dependency),
 ):
     senses_in_process = await sense_crud.get_senses(
-        db_session, user, status="in_process", limit=exersice_number
+        db_session, user, status="in_process", limit=exercise_number
     )
     logger.debug(len(senses_in_process))
     senses_in_queue = []
-    if len(senses_in_process) < exersice_number:
-        require_sense_in_queue: int = exersice_number - len(senses_in_process)
+    if len(senses_in_process) < exercise_number:
+        require_sense_in_queue: int = exercise_number - len(senses_in_process)
         logger.debug(f"require_sense_in_queue: {require_sense_in_queue}")
         senses_in_queue = await sense_crud.get_senses(
             db_session, user, status="in_queue", limit=require_sense_in_queue
