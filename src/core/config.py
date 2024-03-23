@@ -19,6 +19,7 @@ class DataBaseSettings(BaseSettings):
 class Microservices(BaseSettings):
     LITERATURE_MS_URL: str
     DICTIONARY_MS_URL: str
+    AI_MS_URL: str
 
 
 class Auth(BaseSettings):

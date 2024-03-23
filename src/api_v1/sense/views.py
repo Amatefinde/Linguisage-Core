@@ -20,10 +20,13 @@ router = APIRouter(prefix="/senses", tags=["Senses"])
 
 @router.get("")
 async def get_user_senses(
+    new_first: bool = False,
+    per_page: int | None = None,
+    page: int | None = None,
     session: AsyncSession = Depends(db_helper.session_dependency),
     user: User = Depends(current_active_user_dependency),
 ):
-    db_senses: list[SGetSense] = await crud.get_senses(session, user)
+    db_senses: list[SGetSense] = await crud.get_senses(session, user, page=page, limit=per_page)
     f_sense_id_and_sense_id_map = {x.sense_id: x.id for x in db_senses}
     sense_entities = await dictionary_provider.get_senses(db_senses)
     for sense in sense_entities.senses:

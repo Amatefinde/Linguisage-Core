@@ -13,6 +13,7 @@ from src.core.providers.Dictionary.schemas.general import (
     DictionaryWordInfo,
 )
 from ...core.providers.Dictionary.schemas.get_senses import SGetSense
+from src.core.types import sense_status
 
 
 async def check_is_user_have_sense_by_f_sense_id(
@@ -68,14 +69,9 @@ async def get_senses(
     session: AsyncSession,
     user: User,
     page: int | None = None,
-    size: int | None = None,
+    limit: int | None = None,
+    status: sense_status | None = None,
 ) -> list[SGetSense]:
-    if type(page) is not type(size):
-        raise TypeError("Page and size must be a same type")
-    if type(page) not in (NoneType, int):
-        raise TypeError("Page must be of type int or NoneType")
-    if type(page) is int and page < 1:
-        raise ValueError("Page can't be less than 1")
     stmt = (
         select(Sense)
         .where(Sense.user == user)
@@ -85,7 +81,11 @@ async def get_senses(
         )
     )
     if page:
-        stmt.offset(page - 1).limit(size)
+        stmt = stmt.offset(page - 1)
+    if limit:
+        stmt = stmt.limit(limit)
+    if status:
+        stmt = stmt.where(Sense.status == status)
 
     row_response = (await session.scalars(stmt)).all()
     return [SGetSense.model_validate(x, from_attributes=True) for x in row_response]
