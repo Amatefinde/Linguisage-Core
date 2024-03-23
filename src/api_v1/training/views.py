@@ -8,6 +8,7 @@ from src.core.database.models import User, Sense
 from src.core.providers.Dictionary import dictionary_provider
 import src.api_v1.sense.crud as sense_crud
 
+
 router = APIRouter(tags=["Training"], prefix="/training")
 
 
