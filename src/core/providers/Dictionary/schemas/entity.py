@@ -1,12 +1,12 @@
 from typing import Optional, List
 from src.core.types import sense_lvl
-from pydantic import HttpUrl, BaseModel
+from pydantic import HttpUrl, BaseModel, Field
 
 
 class WordImage(BaseModel):
     img: HttpUrl
     is_public: bool
-    id: int
+    id: int = Field(serialization_alias="f_image_id")
 
 
 class SenseImage(BaseModel):
