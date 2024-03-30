@@ -22,7 +22,8 @@ class Example(BaseModel):
 
 
 class Sense(BaseModel):
-    id: int
+    id: int = None
+    f_sense_id: int | None = Field(default=None, validation_alias="id")
     short_cut: Optional[str] = None
     part_of_speech: str | None = None
     lvl: sense_lvl | None = None

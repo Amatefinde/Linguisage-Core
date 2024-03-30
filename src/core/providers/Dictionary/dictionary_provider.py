@@ -48,12 +48,16 @@ async def add_personalize_sense(
 async def get_senses(
     get_senses_scheme: list[SGetSense],
 ) -> SenseEntities:
+    f_sense_id_and_sense_id_map = {x.sense_id: x.id for x in get_senses_scheme}
     async with AsyncClient() as httpx_client:
         senses = {"senses": [x.model_dump() for x in get_senses_scheme]}
         url = urljoin(settings.ms.DICTIONARY_MS_URL, "/api/v1/general/get_senses")
         response = await httpx_client.post(url, json=senses)
         if response.status_code == 200:
-            return SenseEntities.model_validate(response.json(), from_attributes=True)
+            sense_entities = SenseEntities.model_validate(response.json(), from_attributes=True)
+            for sense in sense_entities.senses:
+                sense.id = f_sense_id_and_sense_id_map[sense.id]
+            return sense_entities
 
         logger.error(f"status: {response.status_code}. {response.text}")
         raise HTTPException(detail=response.text, status_code=response.status_code)

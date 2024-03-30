@@ -7,9 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api_v1.user.user_manager import current_active_user_dependency
 from src.core.database import db_helper
 from src.core.database.models import User, Sense
+from .schemas import AnswerRequest
+from . import crud
 from src.core.providers.Dictionary import dictionary_provider
+from src.core.providers.Dictionary.schemas.get_senses import SGetSense
 import src.api_v1.sense.crud as sense_crud
-
 
 router = APIRouter(tags=["Training"], prefix="/training")
 
@@ -46,6 +48,27 @@ async def get_training(
             db_session, user, status="in_queue", limit=require_sense_in_queue
         )
 
-    picked_senses = senses_in_process + senses_in_queue + studied_senses
+    picked_senses: list[SGetSense] = senses_in_process + senses_in_queue + studied_senses
     sense_with_content = await dictionary_provider.get_senses(picked_senses)
     return sense_with_content
+
+
+@router.post("/answer", status_code=status.HTTP_201_CREATED)
+async def add_answer(
+    answer: AnswerRequest,
+    user: User = Depends(),
+    db_session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await crud.add_answer(db_session, user, answer)
+
+
+@router.post("/calculate")
+async def calculate(
+    db_session: AsyncSession = Depends(db_helper.session_dependency),
+    user: User = Depends(),
+):
+    senses_in_process: list[SGetSense] = await sense_crud.get_senses(
+        db_session, user, status="in_process"
+    )
+
+    # todo пофиксить! у sense под видом id скрываются f_sense_id
