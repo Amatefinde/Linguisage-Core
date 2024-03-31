@@ -12,6 +12,7 @@ from . import crud
 from src.core.providers.Dictionary import dictionary_provider
 from src.core.providers.Dictionary.schemas.get_senses import SGetSense
 import src.api_v1.sense.crud as sense_crud
+from src.core.providers.AI import SenseReview, RequestSenseReview, AI_provider
 
 router = APIRouter(tags=["Training"], prefix="/training")
 
@@ -81,3 +82,8 @@ async def calculate(
             await db_session.commit()
             await db_session.refresh(sense)
             logger.debug(sense.id)
+
+
+@router.post("/review", response_model=SenseReview)
+async def review(request: RequestSenseReview):
+    return AI_provider.review(request)
