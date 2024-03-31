@@ -1,5 +1,7 @@
+from typing import Iterable
+
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import select, Sequence, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -16,14 +18,12 @@ async def add_answer(session: AsyncSession, user: User, answer: AnswerRequest) -
     return answer
 
 
-async def get_user_answers(session: AsyncSession, senses: list[SGetSense]):
+async def get_user_senses_with_answers(session: AsyncSession, user: User) -> Iterable[SGetSense]:
     stmt = (
         select(Sense)
         .options(selectinload(Sense.answers))
-        .where(Sense.id.in_([sense.id for sense in senses]))
+        .where(Sense.user == user)
+        .where(Sense.status == "in_process")
     )
-    row_db_senses_with_answer = await session.execute(stmt)
-    db_senses_with_answer = row_db_senses_with_answer.scalars().all()
-    for sense in db_senses_with_answer:
-        for answer in sense.answers:
-            logger.debug(answer)
+    row_response = await session.execute(stmt)
+    return row_response.scalars().all()

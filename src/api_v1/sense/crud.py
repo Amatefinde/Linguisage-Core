@@ -80,11 +80,11 @@ async def get_senses(
             selectinload(Sense.word_images),
         )
     )
-    if page:
+    if page is not None:
         stmt = stmt.offset(page - 1)
-    if limit:
+    if limit is not None:
         stmt = stmt.limit(limit)
-    if status:
+    if status is not None:
         stmt = stmt.where(Sense.status == status)
 
     row_response = (await session.scalars(stmt)).all()
@@ -112,3 +112,18 @@ async def mark_senses_that_user_already_have(
     row_response = await session.execute(stmt)
     already_added_senses = row_response.scalars().all()
     __mark_already_added_senses(dictionary_word_info, already_added_senses)
+
+
+async def get_sense(session: AsyncSession, sense_id: int) -> Sense | None:
+    return await session.get(Sense, sense_id)
+
+
+async def set_sense_status(
+    session: AsyncSession,
+    sense: Sense,
+    status: sense_status,
+) -> Sense:
+    sense.status = status
+    await session.commit()
+    await session.refresh(sense)
+    return sense

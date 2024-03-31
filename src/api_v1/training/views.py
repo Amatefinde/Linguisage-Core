@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api_v1.user.user_manager import current_active_user_dependency
 from src.core.database import db_helper
-from src.core.database.models import User, Sense
+from src.core.database.models import User, Sense, Answer
 from .schemas import AnswerRequest
 from . import crud
 from src.core.providers.Dictionary import dictionary_provider
@@ -36,18 +36,15 @@ async def get_training(
         status="in_process",
         limit=amount_of_words_in_study + (amount_of_studied_words - len(studied_senses)),
     )
-
     senses_in_queue = []
 
     if len(senses_in_process) < amount_of_words_in_study + (
         amount_of_studied_words - len(studied_senses)
     ):
         require_sense_in_queue: int = total_amount_of_words - len(senses_in_process)
-        logger.debug(f"require_sense_in_queue: {require_sense_in_queue}")
         senses_in_queue = await sense_crud.get_senses(
             db_session, user, status="in_queue", limit=require_sense_in_queue
         )
-
     picked_senses: list[SGetSense] = senses_in_process + senses_in_queue + studied_senses
     sense_with_content = await dictionary_provider.get_senses(picked_senses)
     return sense_with_content
@@ -55,20 +52,32 @@ async def get_training(
 
 @router.post("/answer", status_code=status.HTTP_201_CREATED)
 async def add_answer(
-    answer: AnswerRequest,
-    user: User = Depends(),
+    user_answer: AnswerRequest,
+    user: User = Depends(current_active_user_dependency),
     db_session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    return await crud.add_answer(db_session, user, answer)
+    sense_db = await sense_crud.get_sense(db_session, user_answer.sense_id)
+    await sense_crud.set_sense_status(db_session, sense_db, "in_process")
+    return await crud.add_answer(db_session, user, user_answer)
 
 
 @router.post("/calculate")
 async def calculate(
     db_session: AsyncSession = Depends(db_helper.session_dependency),
-    user: User = Depends(),
+    user: User = Depends(current_active_user_dependency),
 ):
-    senses_in_process: list[SGetSense] = await sense_crud.get_senses(
-        db_session, user, status="in_process"
-    )
+    senses_with_answers = await crud.get_user_senses_with_answers(db_session, user)
 
-    # todo пофиксить! у sense под видом id скрываются f_sense_id
+    for sense in senses_with_answers:
+        sense_score = 0
+        for answer in sense.answers:
+            if answer.is_correct:
+                sense_score += 0.20
+            else:
+                sense_score -= 0.20
+                sense_score = max(sense_score, 0)
+        if sense_score > 1:
+            sense.status = "complete"
+            await db_session.commit()
+            await db_session.refresh(sense)
+            logger.debug(sense.id)
