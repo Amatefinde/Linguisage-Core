@@ -86,4 +86,4 @@ async def calculate(
 
 @router.post("/review", response_model=SenseReview)
 async def review(request: RequestSenseReview):
-    return AI_provider.review(request)
+    return await AI_provider.review(request)
