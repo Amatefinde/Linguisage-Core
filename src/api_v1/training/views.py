@@ -84,6 +84,19 @@ async def calculate(
             logger.debug(sense.id)
 
 
+class RequestSenseReviewWithSenseId(RequestSenseReview):
+    sense_id: int
+
+
 @router.post("/review", response_model=SenseReview)
-async def review(request: RequestSenseReview):
-    return await AI_provider.review(request)
+async def review(
+    request: RequestSenseReviewWithSenseId,
+    db_session: AsyncSession = Depends(db_helper.session_dependency),
+    user: User = Depends(current_active_user_dependency),
+):
+    review_result = await AI_provider.review(request)
+    is_correct = True if review_result.score >= 7 else False
+    await crud.add_answer(
+        db_session, user, AnswerRequest(sense_id=request.sense_id, is_correct=is_correct)
+    )
+    return review_result
