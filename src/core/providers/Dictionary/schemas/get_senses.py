@@ -1,4 +1,5 @@
 from pydantic import BaseModel, field_serializer, Field
+from src.core.types import sense_status_type
 
 
 class SenseImage(BaseModel):
@@ -11,6 +12,7 @@ class WordImage(BaseModel):
 
 class SGetSense(BaseModel):
     id: int
+    status: sense_status_type
     sense_id: int = Field(validation_alias="f_sense_id")
     sense_image_ids: list[SenseImage] = Field(validation_alias="sense_images")
     word_image_ids: list[WordImage] = Field(validation_alias="word_images")

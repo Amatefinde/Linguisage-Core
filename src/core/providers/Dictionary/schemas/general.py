@@ -19,7 +19,7 @@ class Sense(BaseModel):
     definition: str
     part_of_speech: str | None = None
     f_sense_id: int
-    lvl: types.sense_lvl | None = None
+    lvl: types.sense_lvl_type | None = None
     short_cut: str | None = None
     examples: list[Example]
     in_user_dictionary: bool = False

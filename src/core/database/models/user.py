@@ -28,7 +28,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     created_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, server_default=func.now()
     )
-    account_status: Mapped[types.account_status] = mapped_column(
+    account_status: Mapped[types.account_status_type] = mapped_column(
         default="default", server_default="default"
     )
     literatures: Mapped[list["Literature"]] = relationship(

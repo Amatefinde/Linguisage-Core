@@ -13,7 +13,7 @@ class UserGeneralFieldMixin(schemas.CreateUpdateDictModel):
 
 class UserRead(schemas.BaseUser[uuid.UUID], UserGeneralFieldMixin):
     last_verification_request: datetime | None = None
-    account_status: types.account_status
+    account_status: types.account_status_type
 
 
 class UserCreate(UserGeneralFieldMixin):

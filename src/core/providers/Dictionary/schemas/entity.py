@@ -1,5 +1,5 @@
 from typing import Optional, List
-from src.core.types import sense_lvl
+from src.core.types import sense_lvl_type, sense_status_type
 from pydantic import HttpUrl, BaseModel, Field
 
 
@@ -23,10 +23,11 @@ class Example(BaseModel):
 
 class Sense(BaseModel):
     id: int = None
+    status: sense_status_type | None = None
     f_sense_id: int | None = Field(default=None, validation_alias="id")
     short_cut: Optional[str] = None
     part_of_speech: str | None = None
-    lvl: sense_lvl | None = None
+    lvl: sense_lvl_type | None = None
     is_public: bool
     definition: str
     word_images: List[WordImage]

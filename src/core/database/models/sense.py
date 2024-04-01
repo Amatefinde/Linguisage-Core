@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
     from . import User, Literature, Answer
 
-from src.core.types import sense_status
+from src.core.types import sense_status_type
 
 
 class Sense(Base):
@@ -16,7 +16,7 @@ class Sense(Base):
     created_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow(), server_default=func.now()
     )
-    status: Mapped[sense_status] = mapped_column(default="in_queue")
+    status: Mapped[sense_status_type] = mapped_column(default="in_queue")
 
     literature_id: Mapped[int] = mapped_column(ForeignKey("literature.id"), nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))

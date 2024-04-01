@@ -13,7 +13,7 @@ from src.core.providers.Dictionary.schemas.general import (
     DictionaryWordInfo,
 )
 from ...core.providers.Dictionary.schemas.get_senses import SGetSense
-from src.core.types import sense_status
+from src.core.types import sense_status_type
 
 
 async def check_is_user_have_sense_by_f_sense_id(
@@ -70,7 +70,7 @@ async def get_senses(
     user: User,
     page: int | None = None,
     limit: int | None = None,
-    status: sense_status | None = None,
+    status: sense_status_type | None = None,
 ) -> list[SGetSense]:
     stmt = (
         select(Sense)
@@ -121,7 +121,7 @@ async def get_sense(session: AsyncSession, sense_id: int) -> Sense | None:
 async def set_sense_status(
     session: AsyncSession,
     sense: Sense,
-    status: sense_status,
+    status: sense_status_type,
 ) -> Sense:
     sense.status = status
     await session.commit()
