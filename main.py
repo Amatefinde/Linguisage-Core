@@ -16,6 +16,8 @@ origins = [
     "http://192.168.31.23:5173",
     "http://linguisage.ru",
     "https://linguisage.ru",
+    "https://linguisage.ru:8080",
+    "https://linguisage.ru:55555",
 ]
 
 app.add_middleware(
