@@ -20,6 +20,7 @@ origins = [
     "https://linguisage.ru:55555",
 ]
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
