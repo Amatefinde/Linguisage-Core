@@ -1,5 +1,6 @@
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
-from typing_extensions import Optional
 
 
 class RequestSenseReview(BaseModel):
@@ -8,7 +9,7 @@ class RequestSenseReview(BaseModel):
     sentence: str
 
 
-class ReviewResponse(BaseModel):
+class SenseReview(BaseModel):
     score: int
     feedback: Optional[str] = None
     explanation: Optional[str] = None
