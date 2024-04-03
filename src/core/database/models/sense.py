@@ -29,7 +29,9 @@ class Sense(Base):
     sense_images: Mapped[list["SenseImage"]] = relationship(
         back_populates="sense", cascade="all, delete-orphan"
     )
-    answers: Mapped[list["Answer"]] = relationship(back_populates="sense")
+    answers: Mapped[list["Answer"]] = relationship(
+        back_populates="sense", cascade="all, delete-orphan"
+    )
 
 
 class WordImage(Base):
