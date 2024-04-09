@@ -2,7 +2,7 @@ from types import NoneType
 from typing import Sequence
 
 from loguru import logger
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -68,6 +68,7 @@ async def add_personalize_sense_to_user(
 async def get_senses(
     session: AsyncSession,
     user: User,
+    new_first: bool | None = None,
     page: int | None = None,
     limit: int | None = None,
     status: sense_status_type | None = None,
@@ -86,9 +87,12 @@ async def get_senses(
         stmt = stmt.limit(limit)
     if status is not None:
         stmt = stmt.where(Sense.status == status)
+    if new_first is not None:
+        stmt = stmt.order_by(desc(Sense.created_at) if new_first else Sense.created_at)
 
     row_response = (await session.scalars(stmt)).all()
-    return [SGetSense.model_validate(x, from_attributes=True) for x in row_response]
+    result = [SGetSense.model_validate(x, from_attributes=True) for x in row_response]
+    return result
 
 
 def __mark_already_added_senses(

@@ -1,5 +1,4 @@
 from pprint import pprint
-
 from fastapi import HTTPException
 from httpx import AsyncClient
 from urllib.parse import urljoin
@@ -14,6 +13,7 @@ from .schemas.general import (
     PersonalizeSenseEntity,
 )
 from .schemas.get_senses import SGetSense
+from ...types import sense_lvl_type
 
 
 async def search(query: str) -> DictionaryWordInfo:
@@ -47,12 +47,18 @@ async def add_personalize_sense(
 
 async def get_senses(
     get_senses_scheme: list[SGetSense],
+    query: str | None = None,
+    lvl: list[sense_lvl_type] | None = None,
 ) -> SenseEntities:
     f_sense_id_and_sense_id_map = {x.sense_id: x for x in get_senses_scheme}
     async with AsyncClient() as httpx_client:
-        senses = {"senses": [x.model_dump() for x in get_senses_scheme]}
+        params = {"senses": [x.model_dump() for x in get_senses_scheme]}
+        if query is not None:
+            params.update({"clauses": {"search": query}})
+        if lvl:
+            params["lvl"] = lvl
         url = urljoin(settings.ms.DICTIONARY_MS_URL, "/api/v1/general/get_senses")
-        response = await httpx_client.post(url, json=senses)
+        response = await httpx_client.post(url, json=params)
         if response.status_code == 200:
             sense_entities = SenseEntities.model_validate(response.json(), from_attributes=True)
             for sense in sense_entities.senses:
