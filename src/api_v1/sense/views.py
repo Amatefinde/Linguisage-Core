@@ -12,7 +12,7 @@ from src.core.providers.Dictionary.schemas.general import SRequestAddPersonalize
 from src.api_v1.user.user_manager import current_active_user_dependency
 from src.core.database import db_helper
 from src.core.database.models import User, Sense
-from src.core.types import sense_lvl_type
+from src.core.types import sense_lvl_type, sense_status_type
 from src.core.providers.Dictionary.schemas.get_senses import SGetSense
 
 router = APIRouter(prefix="/senses", tags=["Senses"])
@@ -24,18 +24,20 @@ async def get_user_senses(
     per_page: int | None = None,
     page: int | None = None,
     query: str | None = None,
-    # lvl: Annotated[list[sense_lvl_type] | None, Query()] = None,
+    sense_status: Annotated[list[sense_status_type] | None, Query()] = None,
     session: AsyncSession = Depends(db_helper.session_dependency),
     user: User = Depends(current_active_user_dependency),
 ):
     query = query if query else None
     lvl = None
     if query or lvl:
-        db_senses: list[SGetSense] = await crud.get_senses(session, user, new_first=new_first)
+        db_senses: list[SGetSense] = await crud.get_senses(
+            session, user, new_first=new_first, status=sense_status
+        )
         dictionary_senses = await dictionary_provider.get_senses(db_senses, query=query, lvl=lvl)
     else:
         db_senses: list[SGetSense] = await crud.get_senses(
-            session, user, page=page, limit=per_page, new_first=new_first
+            session, user, page=page, limit=per_page, new_first=new_first, status=sense_status
         )
         dictionary_senses = await dictionary_provider.get_senses(db_senses)
     return dictionary_senses

@@ -28,23 +28,21 @@ async def get_training(
     amount_of_words_in_study = total_amount_of_words - amount_of_studied_words
 
     studied_senses = await sense_crud.get_senses(
-        db_session, user, status="complete", limit=amount_of_studied_words
+        db_session, user, status=["complete"], limit=amount_of_studied_words
     )
 
     senses_in_process = await sense_crud.get_senses(
         db_session,
         user,
-        status="in_process",
+        status=["in_process"],
         limit=amount_of_words_in_study + (amount_of_studied_words - len(studied_senses)),
     )
     senses_in_queue = []
 
-    if len(senses_in_process) < amount_of_words_in_study + (
-        amount_of_studied_words - len(studied_senses)
-    ):
+    if len(senses_in_process) < amount_of_words_in_study + (amount_of_studied_words - len(studied_senses)):
         require_sense_in_queue: int = total_amount_of_words - len(senses_in_process)
         senses_in_queue = await sense_crud.get_senses(
-            db_session, user, status="in_queue", limit=require_sense_in_queue
+            db_session, user, status=["in_queue"], limit=require_sense_in_queue
         )
     picked_senses: list[SGetSense] = senses_in_process + senses_in_queue + studied_senses
     sense_with_content = await dictionary_provider.get_senses(picked_senses)
@@ -96,7 +94,5 @@ async def review(
 ):
     review_result = await AI_provider.review(request)
     is_correct = True if review_result.score >= 7 else False
-    await crud.add_answer(
-        db_session, user, AnswerRequest(sense_id=request.sense_id, is_correct=is_correct)
-    )
+    await crud.add_answer(db_session, user, AnswerRequest(sense_id=request.sense_id, is_correct=is_correct))
     return review_result
