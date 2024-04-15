@@ -66,7 +66,7 @@ async def calculate(
     user: User = Depends(current_active_user_dependency),
 ):
     senses_with_answers = await crud.get_user_senses_with_answers(db_session, user)
-
+    mastered_senses: list[Sense] = []
     for sense in senses_with_answers:
         sense_score = 0
         for answer in sense.answers:
@@ -76,10 +76,13 @@ async def calculate(
                 sense_score -= 0.20
                 sense_score = max(sense_score, 0)
         if sense_score > 1:
+            mastered_senses.append(sense)
             sense.status = "complete"
             await db_session.commit()
             await db_session.refresh(sense)
-            logger.debug(sense.id)
+    get_mastered_senses = [SGetSense.model_validate(x, from_attributes=True) for x in mastered_senses]
+    mastered_senses_with_content = await dictionary_provider.get_senses(get_mastered_senses)
+    return mastered_senses_with_content
 
 
 class RequestSenseReviewWithSenseId(RequestSenseReview):

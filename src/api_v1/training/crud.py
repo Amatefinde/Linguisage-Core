@@ -18,12 +18,16 @@ async def add_answer(session: AsyncSession, user: User, answer: AnswerRequest) -
     return answer
 
 
-async def get_user_senses_with_answers(session: AsyncSession, user: User) -> Iterable[SGetSense]:
+async def get_user_senses_with_answers(session: AsyncSession, user: User) -> Sequence[Sense]:
     stmt = (
         select(Sense)
-        .options(selectinload(Sense.answers))
+        .options(
+            selectinload(Sense.answers),
+            selectinload(Sense.sense_images),
+            selectinload(Sense.word_images),
+        )
         .where(Sense.user == user)
         .where(Sense.status == "in_process")
     )
-    row_response = await session.execute(stmt)
-    return row_response.scalars().all()
+
+    return (await session.scalars(stmt)).all()
