@@ -52,7 +52,7 @@ async def get_senses(
 ) -> SenseEntities:
     f_sense_id_and_sense_id_map = {x.sense_id: x for x in get_senses_scheme}
     async with AsyncClient() as httpx_client:
-        params = {"senses": [x.model_dump() for x in get_senses_scheme]}
+        params = {"senses": [x.model_dump(exclude={"created_at"}) for x in get_senses_scheme]}
         if query is not None:
             params.update({"clauses": {"search": query}})
         if lvl:
@@ -63,6 +63,7 @@ async def get_senses(
             sense_entities = SenseEntities.model_validate(response.json(), from_attributes=True)
             for sense in sense_entities.senses:
                 sense.status = f_sense_id_and_sense_id_map[sense.id].status
+                sense.created_at = f_sense_id_and_sense_id_map[sense.id].created_at
                 # поле айди перезаписывать последним, потому что по нему перезаписываются остальные поля
                 sense.id = f_sense_id_and_sense_id_map[sense.id].id
             return sense_entities

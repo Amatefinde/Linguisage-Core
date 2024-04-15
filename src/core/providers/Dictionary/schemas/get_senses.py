@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, field_serializer, Field
 from src.core.types import sense_status_type
 
@@ -16,6 +18,7 @@ class SGetSense(BaseModel):
     sense_id: int = Field(validation_alias="f_sense_id")
     sense_image_ids: list[SenseImage] = Field(validation_alias="sense_images")
     word_image_ids: list[WordImage] = Field(validation_alias="word_images")
+    created_at: datetime | None = None
 
     @field_serializer("sense_image_ids")
     def serialize_sense_images(self, sense_images: list[SenseImage]):

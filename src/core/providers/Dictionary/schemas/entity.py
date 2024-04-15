@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from src.core.types import sense_lvl_type, sense_status_type
 from pydantic import HttpUrl, BaseModel, Field
@@ -33,6 +34,7 @@ class Sense(BaseModel):
     word_images: List[WordImage]
     sense_images: List[SenseImage]
     word: dict
+    created_at: datetime | None = None
     examples: List[Example]
 
 
