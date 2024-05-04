@@ -13,6 +13,7 @@ from src.core.providers.Literature.scheme import (
     LiteratureEpubEntity,
     ManyLiteratureEpubEntity,
     SPatchRequest,
+    LiteratureEpubEntityWithStats,
 )
 from .dependencies import literature_dependency
 
@@ -24,9 +25,7 @@ async def get_all_literature(
     current_user: User = Depends(current_active_user_dependency),
     db_session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    db_literature: Iterable[Literature] = await crud.get_all_user_literature(
-        db_session, current_user
-    )
+    db_literature: Iterable[Literature] = await crud.get_all_user_literature(db_session, current_user)
     f_id_and_id_map = {literature.f_literature_id: literature.id for literature in db_literature}
     literature_entity = await literature_provider.get_many_book(list(f_id_and_id_map.keys()))
     for literature in literature_entity.books:
@@ -56,7 +55,7 @@ async def add_literature(
 
 
 @router.patch("/{literature_id}", response_model=LiteratureEpubEntity)
-async def add_literature(
+async def update_literature(
     patch: SPatchRequest,
     db_literature: Literature = Depends(literature_dependency),
     db_session: AsyncSession = Depends(db_helper.session_dependency),
@@ -67,11 +66,15 @@ async def add_literature(
     return epub_entity
 
 
-@router.get("/last", response_model=LiteratureEpubEntity)
+@router.get("/last", response_model=LiteratureEpubEntityWithStats)
 async def get_last_opened_literature(
     current_user: User = Depends(current_active_user_dependency),
     db_session: AsyncSession = Depends(db_helper.session_dependency),
 ):
     if db_literature := await crud.get_last_user_literature(db_session, user=current_user):
-        return await literature_provider.get_one_book(db_literature.f_literature_id)
+        literature: LiteratureEpubEntity = await literature_provider.get_one_book(
+            db_literature.f_literature_id
+        )
+        stats = await crud.get_literature_stats(db_session, db_literature)
+        return LiteratureEpubEntityWithStats(**literature.model_dump(), stats=stats)
     raise HTTPException(status_code=404, detail=f"User have not yet literature")

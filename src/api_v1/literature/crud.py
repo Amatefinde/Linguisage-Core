@@ -3,8 +3,8 @@ from typing import Iterable
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.database.models import Literature, User
-from src.core.providers.Literature.scheme import LiteratureEpubEntity, SPatchRequest
+from src.core.database.models import Literature, User, Sense
+from src.core.providers.Literature.scheme import LiteratureEpubEntity, SPatchRequest, LastLiteratureStats
 
 
 async def add_user_literature(
@@ -53,4 +53,23 @@ async def get_last_user_literature(session: AsyncSession, user: User) -> Literat
         .order_by(Literature.last_open_datetime, Literature.add_datetime)
         .limit(1)
     )
-    return await session.scalar(stmt)
+    result = await session.scalar(stmt)
+    return result
+
+
+async def get_literature_stats(session: AsyncSession, db_literature: Literature) -> LastLiteratureStats:
+    stmt = select(Sense).where(Sense.literature_id == db_literature.id)
+    row_result = await session.execute(stmt)
+    senses = row_result.scalars().all()
+    stats = LastLiteratureStats()
+    for sense in senses:
+        stats.word_total += 1
+        if sense.status == "complete":
+            stats.word_learned += 1
+        elif sense.status == "in_process":
+            stats.word_in_process += 1
+        elif sense.status == "in_queue":
+            stats.word_in_queue += 1
+        else:
+            raise ValueError("Unknown status")
+    return stats

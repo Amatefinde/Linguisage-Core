@@ -20,3 +20,14 @@ class ManyLiteratureEpubEntity(BaseModel):
 
 class SPatchRequest(BaseModel):
     title: str
+
+
+class LastLiteratureStats(BaseModel):
+    word_learned: int = 0
+    word_in_process: int = 0
+    word_in_queue: int = 0
+    word_total: int = 0
+
+
+class LiteratureEpubEntityWithStats(LiteratureEpubEntity):
+    stats: LastLiteratureStats
