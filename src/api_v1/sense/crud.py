@@ -31,6 +31,7 @@ async def add_public_sense_to_user(
     db_word_images = [WordImage(f_img_id=f_img_id) for f_img_id in add_scheme.f_word_image_ids]
     db_sense_images = [SenseImage(f_img_id=f_img_id) for f_img_id in add_scheme.f_sense_image_ids]
     db_sense = Sense(
+        literature_id=add_scheme.literature_id,
         f_sense_id=add_scheme.f_sense_id,
         word_images=db_word_images,
         sense_images=db_sense_images,
