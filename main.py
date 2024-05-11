@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from src.core.database.models import User, db_user_dependency
 from src.api_v1 import router as api_v1_router
@@ -29,6 +30,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount(
+    "/static",  # url_path
+    StaticFiles(directory="/static"),  # path_to_directory
+    name="/static_files",
+)
 
 # @app.on_event("startup")
 # async def on_startup():
