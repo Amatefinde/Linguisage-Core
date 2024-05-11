@@ -11,7 +11,6 @@ services:
     ports:
       - "9300:9300"
     volumes:
-      - ${VOLUME_STATIC}:/linguisage/static
       - /etc/letsencrypt:/literature/letsencrypt
 
 
