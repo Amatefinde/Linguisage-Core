@@ -32,7 +32,7 @@ app.add_middleware(
 
 app.mount(
     "/static",  # url_path
-    StaticFiles(directory="/static"),  # path_to_directory
+    StaticFiles(directory="./static"),  # path_to_directory
     name="/static_files",
 )
 
