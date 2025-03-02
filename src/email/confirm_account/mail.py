@@ -31,7 +31,7 @@ class EmailSender:
 
 
 def send_confirm_email(email: str, token: str):
-    confirm_url = f"{settings.protocol}://linguisage.ru/auth?token={token}"
+    confirm_url = f"{settings.protocol}://linguisage.fun/auth?token={token}"
     sender = EmailSender()
     sender.send_email_confirm(email, confirm_url)
     logger.info(f"Email: email, Token: {confirm_url}")
