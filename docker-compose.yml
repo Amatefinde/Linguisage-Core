@@ -12,6 +12,7 @@ services:
       - "9300:9300"
     volumes:
       - /etc/letsencrypt:/literature/letsencrypt
+    restart: unless-stopped
 
 
   postgres_db:
@@ -24,4 +25,5 @@ services:
       - "9302:5432"
     volumes:
       - ${VOLUME_POSTGRES}:/var/lib/postgresql/data
+    restart: unless-stopped
 
